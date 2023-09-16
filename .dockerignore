@@ -1,0 +1,17 @@
+.git/
+.gitignore
+**/.gitkeep
+**/.DS_Store
+.dockerignore
+Dockerfile*
+docker-compose*.yml
+README.md
+
+# pass env vars through docker-compose 
+# or mount .env* in dev
+.env*
+build/
+
+node_modules/
+
+coverage/
