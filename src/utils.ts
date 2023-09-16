@@ -1,6 +1,3 @@
-// https://github.com/DefinitelyTyped/DefinitelyTyped/issues/60924
-/// <reference lib="dom" />
-
 import { stripHtml } from "string-strip-html";
 
 interface UrlOptions {
@@ -20,12 +17,10 @@ export const buildUrl = (url: string, options?: UrlOptions): string => {
   return result.toString();
 };
 
-type FetcherOptions = UrlOptions & RequestInit;
-
 export const fetcher = {
   get: async (
     url: string,
-    options?: FetcherOptions,
+    options?: UrlOptions & RequestInit,
   ): Promise<Record<string, unknown>> => {
     const endpoint = buildUrl(url, options);
 
