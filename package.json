@@ -37,5 +37,10 @@
   },
   "lint-staged": {
     "**/*": "prettier --write --ignore-unknown"
+  },
+  "dependencies": {
+    "dayjs": "^1.11.9",
+    "string-strip-html": "^8.5.0",
+    "zod": "^3.22.2"
   }
 }
