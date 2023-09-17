@@ -4,12 +4,14 @@ export const recordTypes = {
   review: "review",
   concert: "concert",
 } as const;
-type RecordType = ObjectValues<typeof recordTypes>;
+
+export type RecordType = ObjectValues<typeof recordTypes>;
 
 export const sources = {
   angryMetalGuy: "angryMetalGuy",
   concertsMetal: "concertsMetal",
 } as const;
+
 export type SourceName = ObjectValues<typeof sources>;
 
 export interface Record {

@@ -1,4 +1,4 @@
-import { buildUrl } from "./utils";
+import { buildUrl } from "../src/utils";
 
 describe("buildUrl", () => {
   describe("when receives url: 'http://url.com/', path: '/some/path/' and params: '{ foo: 'bar', num: 2 }'", () => {

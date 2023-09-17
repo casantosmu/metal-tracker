@@ -1,5 +1,6 @@
+import fetch, { RequestInit } from "node-fetch";
 import { stripHtml } from "string-strip-html";
-import { Parser as XmlParser } from "xml2js";
+import { Parser as XmlParser, Builder as XmlBuilder } from "xml2js";
 
 interface UrlOptions {
   path?: string;
@@ -63,7 +64,8 @@ export const fetcher = {
 
 export const removeHtml = (string: string): string => stripHtml(string).result;
 
-export const xmlParser = (string: string): Promise<Record<string, unknown>> =>
-  new XmlParser().parseStringPromise(string) as Promise<
-    Record<string, unknown>
-  >;
+export const xmlParser = (string: string): Promise<unknown> =>
+  new XmlParser().parseStringPromise(string);
+
+export const jsonToXml = (json: unknown): string =>
+  new XmlBuilder().buildObject(json);
