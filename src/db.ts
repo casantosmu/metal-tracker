@@ -3,6 +3,9 @@ import BetterSqlite3 from "better-sqlite3";
 
 const filename = path.join(process.cwd(), "sqlite", "data.db");
 const db = new BetterSqlite3(filename);
+
+// It's recommended to turn on WAL mode to greatly increase overall performance.
+// https://github.com/WiseLibs/better-sqlite3/blob/master/docs/performance.md
 db.pragma("journal_mode = WAL");
 
 interface MigrationActions {

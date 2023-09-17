@@ -1,3 +1,3 @@
-import { fetchReviews } from "./httpClients";
+import { fetchRecords } from "./httpClients";
 
-fetchReviews().then(console.log).catch(console.error);
+fetchRecords().then(console.log).catch(console.error);

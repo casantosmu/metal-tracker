@@ -1,7 +1,19 @@
+import { ObjectValues } from "./types";
+
+const recordTypes = {
+  review: "review",
+} as const;
+type RecordType = ObjectValues<typeof recordTypes>;
+
+const sources = {
+  angryMetalGuy: "angryMetalGuy",
+} as const;
+export type SourceName = ObjectValues<typeof sources>;
+
 export interface Record {
-  type: "review";
-  siteName: string;
-  id: number;
+  type: RecordType;
+  sourceName: SourceName;
+  id: string;
   title: string;
   link: string;
   publicationDate: Date;
