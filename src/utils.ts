@@ -1,4 +1,5 @@
 import { stripHtml } from "string-strip-html";
+import { Parser as XmlParser } from "xml2js";
 
 interface UrlOptions {
   path?: string;
@@ -17,26 +18,52 @@ export const buildUrl = (url: string, options?: UrlOptions): string => {
   return result.toString();
 };
 
-export const fetcher = {
-  get: async (
-    url: string,
-    options?: UrlOptions & RequestInit,
-  ): Promise<Record<string, unknown>> => {
-    const endpoint = buildUrl(url, options);
+type FetcherOptions = UrlOptions & RequestInit;
 
-    const response = await fetch(endpoint, options);
-    const text = await response.text();
-
-    if (!response.ok) {
-      throw new Error(`
-        Error occurred while making a GET request to '${endpoint}':
-        - Response Status: ${response.status} (${response.statusText})
-        - Server Error Message: ${text}
-      `);
-    }
-
-    return JSON.parse(text) as Record<string, unknown>;
+async function getFn(
+  url: string,
+  options: FetcherOptions & {
+    responseType: "text";
   },
+): Promise<string>;
+async function getFn(
+  url: string,
+  options?: FetcherOptions & {
+    responseType?: "json";
+  },
+): Promise<Record<string, unknown>>;
+async function getFn(
+  url: string,
+  options?: FetcherOptions & { responseType?: "text" | "json" },
+): Promise<string | Record<string, unknown>> {
+  const endpoint = buildUrl(url, options);
+
+  const response = await fetch(endpoint, options);
+  const text = await response.text();
+
+  if (!response.ok) {
+    throw new Error(`
+      Error occurred while making a GET request to '${endpoint}':
+      - Response Status: ${response.status} (${response.statusText})
+      - Server Error Message: ${text}
+    `);
+  }
+
+  const result =
+    options?.responseType === "text"
+      ? text
+      : (JSON.parse(text) as Record<string, unknown>);
+
+  return result;
+}
+
+export const fetcher = {
+  get: getFn,
 };
 
 export const removeHtml = (string: string): string => stripHtml(string).result;
+
+export const xmlParser = (string: string): Promise<Record<string, unknown>> =>
+  new XmlParser().parseStringPromise(string) as Promise<
+    Record<string, unknown>
+  >;

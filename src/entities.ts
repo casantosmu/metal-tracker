@@ -1,12 +1,14 @@
 import { ObjectValues } from "./types";
 
-const recordTypes = {
+export const recordTypes = {
   review: "review",
+  concert: "concert",
 } as const;
 type RecordType = ObjectValues<typeof recordTypes>;
 
-const sources = {
+export const sources = {
   angryMetalGuy: "angryMetalGuy",
+  concertsMetal: "concertsMetal",
 } as const;
 export type SourceName = ObjectValues<typeof sources>;
 
