@@ -1,3 +1,3 @@
-import { hello } from "./hello";
+import { fetchRecords } from "./httpClients";
 
-console.log(hello());
+fetchRecords().then(console.log).catch(console.error);

@@ -12,6 +12,9 @@ README.md
 .env*
 build/
 
+# needed for sqlite
+sqlite/data*
+
 node_modules/
 
 coverage/

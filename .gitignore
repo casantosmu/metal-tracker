@@ -1,6 +1,9 @@
 node_modules/
 build/
 
+# needed for sqlite
+sqlite/data*
+
 # very important
 /**/.env*.local
 /**/.env
