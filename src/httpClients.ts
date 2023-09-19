@@ -19,7 +19,7 @@ const wordPressUtils = {
 
 const angryMetalGuy = {
   sourceName: sources.angryMetalGuy,
-  async fetchRecords(): Promise<Record[]> {
+  async fetchLastRecords(): Promise<Record[]> {
     const progressiveMetalTag = 8161;
     const reviewCategory = 13;
     const fetchPostInTheLastDays = 7;
@@ -61,7 +61,7 @@ const angryMetalGuy = {
 
 const concertsMetal = {
   sourceName: sources.concertsMetal,
-  async fetchRecords(): Promise<Record[]> {
+  async fetchLastRecords(): Promise<Record[]> {
     const response = await fetcher.get("https://concerts-metal.com", {
       path: "/rss/ES_Barcelona.xml",
       responseType: "text",
@@ -104,7 +104,7 @@ const concertsMetal = {
 type Integrations = {
   [K in SourceName]: {
     sourceName: K;
-    fetchRecords: () => Promise<Record[]>;
+    fetchLastRecords: () => Promise<Record[]>;
   };
 };
 
@@ -113,9 +113,9 @@ const integrations: Integrations = {
   concertsMetal,
 };
 
-export const fetchRecords = async (): Promise<Record[]> => {
+export const fetchLastRecords = async (): Promise<Record[]> => {
   const promises = Object.values(integrations).map((integration) =>
-    integration.fetchRecords(),
+    integration.fetchLastRecords(),
   );
 
   const results = await Promise.all(promises);
