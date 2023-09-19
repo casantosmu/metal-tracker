@@ -1,6 +1,5 @@
 import { runMigrations } from "./db";
-import { fetchRecords } from "./httpClients";
+import { runMetalTracker } from "./main";
 
 runMigrations();
-
-fetchRecords().then(console.log).catch(console.error);
+void runMetalTracker();

@@ -2,6 +2,7 @@ import path from "path";
 import fs from "fs";
 import BetterSqlite3 from "better-sqlite3";
 import { z } from "zod";
+import { Record, RecordType, SourceName } from "./entities";
 
 const filename = path.join(process.cwd(), "sqlite", "data.db");
 const db = new BetterSqlite3(filename);
@@ -41,11 +42,11 @@ export const runMigrations = (): void => {
   const migrations = parseMigrations(migrationsDir);
 
   db.exec(
-    "CREATE TABLE IF NOT EXISTS migrations (id INTEGER NOT NULL PRIMARY KEY, source TEXT NOT NULL)",
+    "CREATE TABLE IF NOT EXISTS migrations (id INTEGER NOT NULL PRIMARY KEY, source TEXT NOT NULL);",
   );
 
   const { count: firstMigrationToRun } = db
-    .prepare("SELECT COUNT(*) AS count FROM migrations")
+    .prepare("SELECT COUNT(*) AS count FROM migrations;")
     .get() as { count: number };
 
   const migrationsToRun = migrations.slice(firstMigrationToRun);
@@ -54,13 +55,123 @@ export const runMigrations = (): void => {
     return;
   }
 
-  db.transaction(() => {
+  const run = db.transaction(() => {
     migrationsToRun.forEach((migration) => {
       db.exec(migration.source);
-      db.prepare(`INSERT INTO migrations (id, source) VALUES (?, ?)`).run([
+      db.prepare("INSERT INTO migrations (id, source) VALUES (?, ?);").run([
         migration.id,
         migration.source,
       ]);
     });
-  })();
+  });
+
+  run();
+};
+
+export const dropTables = (): void => {
+  db.exec("DROP TABLE IF EXISTS 'migrations';");
+  db.exec("DROP TABLE IF EXISTS 'records';");
+  db.exec("DROP TABLE IF EXISTS 'record_types';");
+  db.exec("DROP TABLE IF EXISTS 'sources';");
+};
+
+interface RecordTable {
+  type: RecordType;
+  source: SourceName;
+  record_id: string;
+  title: string;
+  link: string;
+  publication_date: string;
+  description: string;
+}
+
+export function insertRecords(
+  records: Record[],
+  options: { returning: true; ignoreOnConflict?: boolean },
+): Record[];
+export function insertRecords(
+  records: Record[],
+  options?: { returning?: false; ignoreOnConflict?: boolean },
+): undefined;
+export function insertRecords(
+  records: Record[],
+  options?: { returning?: boolean; ignoreOnConflict?: boolean },
+): Record[] | undefined {
+  const { ignoreOnConflict = false, returning = false } = options ?? {};
+
+  const insertMany = db.transaction(() => {
+    const results: Record[] = [];
+
+    const sql = `
+      INSERT INTO records (type, source, record_id, title, link, publication_date, description)
+      VALUES (@type, @source, @record_id, @title, @link, @publication_date, @description)
+      ${ignoreOnConflict ? "ON CONFLICT DO NOTHING" : ""}
+      ${returning ? "RETURNING *" : ""};
+    `;
+
+    const insert = db.prepare(sql);
+
+    records.forEach((record) => {
+      const params = {
+        type: record.type,
+        source: record.sourceName,
+        record_id: record.id,
+        title: record.title,
+        link: record.link,
+        publication_date: record.publicationDate.toISOString(),
+        description: record.description,
+      };
+
+      if (!returning) {
+        insert.run(params);
+        return;
+      }
+
+      const result = insert.get(params) as RecordTable | undefined;
+
+      if (!result) {
+        return;
+      }
+
+      results.push({
+        type: result.type,
+        sourceName: result.source,
+        id: result.record_id,
+        title: result.title,
+        publicationDate: new Date(result.publication_date),
+        link: result.link,
+        description: result.description,
+      });
+    });
+
+    return returning ? results : undefined;
+  });
+
+  return insertMany();
+}
+
+export const getRecordsByIds = (ids: string[]): Record[] => {
+  const sql = `
+    SELECT
+      type,
+      source,
+      record_id,
+      title,
+      link,
+      publication_date,
+      description
+    FROM records 
+    WHERE record_id IN (${ids.map(() => "?").join(",")});
+  `;
+
+  const result = db.prepare(sql).all(ids) as RecordTable[];
+  return result.map((result) => ({
+    type: result.type,
+    sourceName: result.source,
+    id: result.record_id,
+    title: result.title,
+    publicationDate: new Date(result.publication_date),
+    link: result.link,
+    description: result.description,
+  }));
 };
