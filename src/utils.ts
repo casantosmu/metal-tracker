@@ -69,3 +69,24 @@ export const xmlParser = (string: string): Promise<unknown> =>
 
 export const jsonToXml = (json: unknown): string =>
   new XmlBuilder().buildObject(json);
+
+export const removeControlCharacters = (string: string): string =>
+  string
+    .split("")
+    .filter((character) => character.charCodeAt(0) > 31)
+    .join("");
+
+export const getAsciiCharacters = (string: string): string =>
+  string
+    .split("")
+    .filter((character) => character.charCodeAt(0) <= 255)
+    .join("");
+
+export const truncateString = (
+  string: string,
+  maxLong: number,
+  end = "...",
+): string =>
+  string.length <= maxLong
+    ? string
+    : `${string.slice(0, maxLong - end.length)}${end}`;

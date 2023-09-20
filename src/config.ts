@@ -11,6 +11,7 @@ const envSchema = z.object({
   AWS_ACCESS_KEY_ID: z.string(),
   AWS_SECRET_ACCESS_KEY: z.string(),
   AWS_REGION: z.string(),
+  AWS_SNS_TOPIC_ARN: z.string(),
   SNS_TOPIC_NAME: z.string(),
   EMAIL_ADDRESS: z.string().email(),
 });

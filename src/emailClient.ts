@@ -4,8 +4,17 @@ import {
   ListSubscriptionsByTopicCommand,
   SubscribeCommand,
   CreateTopicCommand,
+  PublishCommand,
 } from "@aws-sdk/client-sns";
 import { getEnv } from "./config";
+import { Record } from "./entities";
+import {
+  getAsciiCharacters,
+  removeControlCharacters,
+  truncateString,
+} from "./utils";
+
+const snsSubjectMaxLong = 100;
 
 const snsClient = new SNSClient({});
 
@@ -70,4 +79,29 @@ export const setupSns = async (): Promise<void> => {
   );
 
   console.log(`Sent topic confirmation to '${emailAddress}' email`);
+};
+
+export const sendRecordsEmail = async (
+  records: Record[],
+  topicArn: string,
+): Promise<void> => {
+  const promises = records.map(async (record) => {
+    let emailSubject = `Metal Tracker - New ${record.type}: ${record.title}`;
+    emailSubject = removeControlCharacters(emailSubject);
+    emailSubject = getAsciiCharacters(emailSubject);
+    emailSubject = truncateString(emailSubject, snsSubjectMaxLong);
+
+    const date = record.publicationDate.toString();
+    const emailMessage = `A new ${record.type} has been published on ${record.sourceName}\n\nTitle: ${record.title}\nDate: ${date}\nDescription: ${record.description}\nLink: ${record.link}`;
+
+    return snsClient.send(
+      new PublishCommand({
+        Subject: emailSubject,
+        Message: emailMessage,
+        TopicArn: topicArn,
+      }),
+    );
+  });
+
+  await Promise.allSettled(promises);
 };
