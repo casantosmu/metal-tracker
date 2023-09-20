@@ -32,6 +32,8 @@
     "@types/xml2js": "^0.4.12",
     "@typescript-eslint/eslint-plugin": "^6.7.0",
     "@typescript-eslint/parser": "^6.7.0",
+    "aws-sdk-client-mock": "^3.0.0",
+    "aws-sdk-client-mock-jest": "^3.0.0",
     "dotenv": "^16.3.1",
     "eslint": "^8.49.0",
     "eslint-import-resolver-typescript": "^3.6.0",

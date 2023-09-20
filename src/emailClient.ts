@@ -103,5 +103,5 @@ export const sendRecordsEmail = async (
     );
   });
 
-  await Promise.allSettled(promises);
+  await Promise.all(promises);
 };
