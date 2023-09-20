@@ -26,7 +26,7 @@ const parseMigrations = (migrationsDir: string): Migration[] => {
 
     if (!idToNumber.success || !isValidFormat) {
       throw new Error(
-        `Migration filename '${filename}' must follow schema of xxx-yyyyy.sql, where 'x' is a positive integer, and 'y' anything`,
+        `Invalid migration filename '${filename}'. It must follow the schema of 'xxx-yyyyy.sql', where 'x' is a positive integer, and 'y' can be anything.`,
       );
     }
 
@@ -41,6 +41,8 @@ export const runMigrations = (): void => {
   const migrationsDir = path.join(__dirname, "migrations");
   const migrations = parseMigrations(migrationsDir);
 
+  console.log(`Checking for new migrations in directory: ${migrationsDir}`);
+
   db.exec(
     "CREATE TABLE IF NOT EXISTS migrations (id INTEGER NOT NULL PRIMARY KEY, source TEXT NOT NULL);",
   );
@@ -52,8 +54,11 @@ export const runMigrations = (): void => {
   const migrationsToRun = migrations.slice(firstMigrationToRun);
 
   if (!migrationsToRun.length) {
+    console.log("No new migrations to run.");
     return;
   }
+
+  console.log(`Found ${migrationsToRun.length} new migrations to run.`);
 
   const run = db.transaction(() => {
     migrationsToRun.forEach((migration) => {
@@ -62,10 +67,14 @@ export const runMigrations = (): void => {
         migration.id,
         migration.source,
       ]);
+
+      console.log(`Executed migration ${migration.id}`);
     });
   });
 
   run();
+
+  console.log("All new migrations have been successfully executed.");
 };
 
 export const dropTables = (): void => {

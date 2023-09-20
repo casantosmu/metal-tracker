@@ -1,5 +1,5 @@
-import { runMigrations } from "./db";
+import { loadEnv } from "./config";
 import { runMetalTracker } from "./main";
 
-runMigrations();
+loadEnv();
 void runMetalTracker();

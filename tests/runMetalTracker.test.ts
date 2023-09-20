@@ -1,4 +1,7 @@
+import "aws-sdk-client-mock-jest";
 import nock from "nock";
+import { PublishCommand, SNSClient } from "@aws-sdk/client-sns";
+import { mockClient } from "aws-sdk-client-mock";
 import { jsonToXml } from "../src/utils";
 import { getRecordsByIds, insertRecords } from "../src/db";
 import { runMetalTracker } from "../src/main";
@@ -21,6 +24,8 @@ afterAll(() => {
 
 describe("runMetalTracker", () => {
   it("should save the records returned by the endpoints", async () => {
+    const snsMock = mockClient(SNSClient).resolves({});
+
     // Verify for conflicts with records previously added to the database
     const previousAngryMetalGuyRecords = createFakeWordPressJsonV2Posts();
     insertRecords(
@@ -42,7 +47,6 @@ describe("runMetalTracker", () => {
       .reply(200, jsonToXml(fakeConcertsMetal));
 
     const expectedSaved = [
-      ...fakeWordPressJsonV2PostsToRecords(previousAngryMetalGuyRecords),
       ...fakeWordPressJsonV2PostsToRecords(newAngryMetalGuyRecords),
       ...fakeConcertsMetalResponseToRecords(fakeConcertsMetal),
     ];
@@ -53,5 +57,9 @@ describe("runMetalTracker", () => {
       expectedSaved.map((record) => record.id),
     );
     expect(recordsSaved).toStrictEqual(expectedSaved);
+    expect(snsMock).toHaveReceivedCommandTimes(
+      PublishCommand,
+      expectedSaved.length,
+    );
   });
 });
