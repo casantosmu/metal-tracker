@@ -50,5 +50,13 @@ jobs:
       - name: Install Dependencies
         run: npm ci
 
+      - name: Create .env file
+        run: |
+          echo "AWS_ACCESS_KEY_ID=XXXXXXXX" >> .env.example
+          echo "AWS_SECRET_ACCESS_KEY=XXXXXXXX" >> .env.example
+          echo "AWS_REGION=us-east-1" >> .env.example
+          echo "SNS_TOPIC_NAME=aws-sns-topic" >> .env.example
+          echo "EMAIL_ADDRESS=example@example.com" >> .env.example
+
       - name: Run Jest tests
         run: npm run test:coverage
