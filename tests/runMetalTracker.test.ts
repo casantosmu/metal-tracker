@@ -12,7 +12,7 @@ import {
   fakeConcertsMetalResponseToRecords,
   fakeWordPressJsonV2PostsToRecords,
   setupDb,
-} from "./utils";
+} from "./testUtils";
 
 beforeAll(() => {
   setupDb();
@@ -23,10 +23,10 @@ afterAll(() => {
 });
 
 describe("runMetalTracker", () => {
-  it("should save the records returned by the endpoints", async () => {
+  it("should save records returned by the endpoints and send them to Amazon SNS", async () => {
     const snsMock = mockClient(SNSClient).resolves({});
 
-    // Verify for conflicts with records previously added to the database
+    // Add previously existing records in the database, which will be returned by the endpoint but should be ignored
     const previousAngryMetalGuyRecords = createFakeWordPressJsonV2Posts();
     insertRecords(
       fakeWordPressJsonV2PostsToRecords(previousAngryMetalGuyRecords),

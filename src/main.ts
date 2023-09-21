@@ -1,5 +1,5 @@
 import { inspect } from "util";
-import { fetchLastRecords } from "./httpClients";
+import { getLastRecords } from "./integrations";
 import { insertRecords } from "./db";
 import { sendRecordsEmail } from "./emailClient";
 import { getEnv } from "./config";
@@ -7,7 +7,7 @@ import { getEnv } from "./config";
 export const runMetalTracker = async (): Promise<void> => {
   console.log("Initiating metal tracking process...");
 
-  const lastRecords = await fetchLastRecords();
+  const lastRecords = await getLastRecords();
 
   if (!lastRecords.length) {
     console.log("No new records were found.");
@@ -20,14 +20,14 @@ export const runMetalTracker = async (): Promise<void> => {
   });
 
   if (!newRecords.length) {
-    console.log("No new records were found after insertion.");
+    console.log("No new records were added to the database.");
     return;
   }
 
   await sendRecordsEmail(newRecords, getEnv().AWS_SNS_TOPIC_ARN);
 
   console.log(
-    `New records registered successfully:\n${inspect(newRecords, {
+    `Successfully sent an email with new records:\n${inspect(newRecords, {
       depth: null,
     })}`,
   );

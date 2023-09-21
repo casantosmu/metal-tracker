@@ -7,7 +7,7 @@ import {
   PublishCommand,
 } from "@aws-sdk/client-sns";
 import { getEnv } from "./config";
-import { Record } from "./entities";
+import { TRecord } from "./entities";
 import {
   getAsciiCharacters,
   removeControlCharacters,
@@ -82,7 +82,7 @@ export const setupSns = async (): Promise<void> => {
 };
 
 export const sendRecordsEmail = async (
-  records: Record[],
+  records: TRecord[],
   topicArn: string,
 ): Promise<void> => {
   const promises = records.map(async (record) => {

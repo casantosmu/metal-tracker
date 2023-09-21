@@ -1,6 +1,6 @@
 import { generateMock } from "@anatine/zod-mock";
 import { z } from "zod";
-import { Record } from "../src/entities";
+import { TRecord } from "../src/entities";
 import { dropTables, runMigrations } from "../src/db";
 
 export const setupDb = (): void => {
@@ -40,7 +40,7 @@ export const createFakeWordPressJsonV2Posts = (): FakeWordPressJsonV2Post[] =>
 
 export const fakeWordPressJsonV2PostsToRecords = (
   posts: FakeWordPressJsonV2Post[],
-): Record[] =>
+): TRecord[] =>
   posts.map((post) => ({
     type: "review",
     sourceName: "angryMetalGuy",
@@ -101,7 +101,7 @@ export const createFakeConcertsMetalResponse = (): FakeConcertsMetalResponse =>
 
 export const fakeConcertsMetalResponseToRecords = (
   response: FakeConcertsMetalResponse,
-): Record[] =>
+): TRecord[] =>
   response.rss.channel[0].item.map((item) => ({
     type: "concert",
     sourceName: "concertsMetal",
