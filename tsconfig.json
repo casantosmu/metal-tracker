@@ -21,9 +21,5 @@
     "noPropertyAccessFromIndexSignature": true,
     /* Completeness */
     "skipLibCheck": true
-  },
-  "ts-node": {
-    /* It is faster to skip typechecking */
-    "transpileOnly": true
   }
 }
