@@ -9,8 +9,9 @@
   ],
   "overrides": [
     {
-      "files": ["**/*.test.ts", "**/*.spec.ts"],
-      "extends": ["plugin:jest/recommended", "plugin:jest/style"]
+      "files": ["tests/**"],
+      "plugins": ["vitest"],
+      "extends": ["plugin:vitest/recommended"]
     }
   ],
   "plugins": ["@typescript-eslint"],

@@ -1,3 +1,4 @@
+import { describe, it, expect } from "vitest";
 import { buildUrl } from "../src/utils";
 
 describe("buildUrl", () => {
