@@ -15,7 +15,7 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
 RUN npm run build
-RUN cp -r src/migrations build
+RUN cp -r src/migrations dist
 
 # Production image, install prod dependencies, copy all the files and run Node
 FROM base AS prod
@@ -28,7 +28,7 @@ COPY package*.json ./
 RUN npm pkg delete scripts.prepare
 RUN npm ci --omit=dev
 
-COPY --from=builder /app/build ./
+COPY --from=builder /app/dist ./
 
 USER node
 
