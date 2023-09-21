@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+type Env = z.infer<typeof envSchema>;
+
 const envSchema = z.object({
   NODE_ENV: z
     .union([
@@ -16,7 +18,6 @@ const envSchema = z.object({
   EMAIL_ADDRESS: z.string().email(),
 });
 
-type Env = z.infer<typeof envSchema>;
 let env: Env | undefined;
 
 export const loadEnv = (): void => {

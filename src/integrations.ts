@@ -1,7 +1,7 @@
 import { z } from "zod";
 import dayjs from "dayjs";
 import { fetcher, removeHtml, xmlParser } from "./utils";
-import { Record, SourceName, sources } from "./entities";
+import { TRecord, SourceName, sources } from "./entities";
 
 const wordPressUtils = {
   maxPerPage: 100,
@@ -19,7 +19,7 @@ const wordPressUtils = {
 
 const angryMetalGuy = {
   sourceName: sources.angryMetalGuy,
-  async getLastRecords(): Promise<Record[]> {
+  async getLastRecords(): Promise<TRecord[]> {
     const progressiveMetalTag = 8161;
     const reviewCategory = 13;
     const fetchPostInTheLastDays = 31;
@@ -61,7 +61,7 @@ const angryMetalGuy = {
 
 const concertsMetal = {
   sourceName: sources.concertsMetal,
-  async getLastRecords(): Promise<Record[]> {
+  async getLastRecords(): Promise<TRecord[]> {
     const response = await fetcher.get("https://concerts-metal.com", {
       path: "/rss/ES_Barcelona.xml",
       responseType: "text",
@@ -104,7 +104,7 @@ const concertsMetal = {
 type Integrations = {
   [K in SourceName]: {
     sourceName: K;
-    getLastRecords: () => Promise<Record[]>;
+    getLastRecords: () => Promise<TRecord[]>;
   };
 };
 
@@ -113,7 +113,7 @@ const integrations: Integrations = {
   concertsMetal,
 };
 
-export const getLastRecords = async (): Promise<Record[]> => {
+export const getLastRecords = async (): Promise<TRecord[]> => {
   const promises = Object.values(integrations).map((integration) =>
     integration.getLastRecords(),
   );

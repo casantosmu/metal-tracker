@@ -2,7 +2,7 @@ import path from "path";
 import fs from "fs";
 import BetterSqlite3 from "better-sqlite3";
 import { z } from "zod";
-import { Record, RecordType, SourceName } from "./entities";
+import { TRecord, RecordType, SourceName } from "./entities";
 
 const filename = path.join(process.cwd(), "sqlite", "data.db");
 const db = new BetterSqlite3(filename);
@@ -95,21 +95,21 @@ interface RecordTable {
 }
 
 export function insertRecords(
-  records: Record[],
+  records: TRecord[],
   options: { returning: true; ignoreOnConflict?: boolean },
-): Record[];
+): TRecord[];
 export function insertRecords(
-  records: Record[],
+  records: TRecord[],
   options?: { returning?: false; ignoreOnConflict?: boolean },
 ): undefined;
 export function insertRecords(
-  records: Record[],
+  records: TRecord[],
   options?: { returning?: boolean; ignoreOnConflict?: boolean },
-): Record[] | undefined {
+): TRecord[] | undefined {
   const { ignoreOnConflict = false, returning = false } = options ?? {};
 
   const insertMany = db.transaction(() => {
-    const results: Record[] = [];
+    const results: TRecord[] = [];
 
     const sql = `
       INSERT INTO records (type, source, record_id, title, link, publication_date, description)
@@ -159,7 +159,7 @@ export function insertRecords(
   return insertMany();
 }
 
-export const getRecordsByIds = (ids: string[]): Record[] => {
+export const getRecordsByIds = (ids: string[]): TRecord[] => {
   const sql = `
     SELECT
       type,

@@ -20,14 +20,14 @@ export const runMetalTracker = async (): Promise<void> => {
   });
 
   if (!newRecords.length) {
-    console.log("No new records were found after insertion.");
+    console.log("No new records were added to the database.");
     return;
   }
 
   await sendRecordsEmail(newRecords, getEnv().AWS_SNS_TOPIC_ARN);
 
   console.log(
-    `New records registered successfully:\n${inspect(newRecords, {
+    `Successfully sent an email with new records:\n${inspect(newRecords, {
       depth: null,
     })}`,
   );
