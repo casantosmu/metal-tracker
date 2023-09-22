@@ -1,5 +1,5 @@
-import { loadEnv } from "./config";
-import { runMetalTracker } from "./main";
+import { loadEnv } from "./config.js";
+import { runMetalTracker } from "./main.js";
 
 loadEnv();
-void runMetalTracker();
+await runMetalTracker();

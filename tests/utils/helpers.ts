@@ -1,17 +1,6 @@
 import { generateMock } from "@anatine/zod-mock";
 import { z } from "zod";
-import { TRecord } from "../src/entities";
-import { dropTables, runMigrations } from "../src/db";
-
-export const setupDb = (): void => {
-  runMigrations();
-};
-
-export const closeDb = (): void => {
-  if (Math.random() < 0.2) {
-    dropTables();
-  }
-};
+import type { TRecord } from "../../src/entities.js";
 
 interface FakeWordPressJsonV2Post {
   link: string;
@@ -88,7 +77,7 @@ export const createFakeConcertsMetalResponse = (): FakeConcertsMetalResponse =>
                   title: z.array(z.string()).nonempty(),
                   pubDate: z.array(z.string().datetime()).nonempty(),
                   link: z.array(z.string()).nonempty(),
-                  guid: z.array(z.string()).nonempty(),
+                  guid: z.array(z.string().uuid()).nonempty(),
                   description: z.array(z.string()).nonempty(),
                 }),
               ),

@@ -10,7 +10,7 @@ README.md
 # pass env vars through docker-compose 
 # or mount .env* in dev
 .env*
-build/
+dist/
 
 # needed for sqlite
 sqlite/data*

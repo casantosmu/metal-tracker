@@ -1,5 +1,5 @@
 node_modules/
-build/
+dist/
 
 # needed for sqlite
 sqlite/data*
@@ -8,5 +8,5 @@ sqlite/data*
 /**/.env*.local
 /**/.env
 
-# jest coverage
+# test coverage
 coverage/

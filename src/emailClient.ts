@@ -6,13 +6,13 @@ import {
   CreateTopicCommand,
   PublishCommand,
 } from "@aws-sdk/client-sns";
-import { getEnv } from "./config";
-import { TRecord } from "./entities";
+import { getEnv } from "./config.js";
+import type { TRecord } from "./entities.js";
 import {
   getAsciiCharacters,
   removeControlCharacters,
   truncateString,
-} from "./utils";
+} from "./utils.js";
 
 const snsSubjectMaxLong = 100;
 

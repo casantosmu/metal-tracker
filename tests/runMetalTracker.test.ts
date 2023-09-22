@@ -1,31 +1,21 @@
-import "aws-sdk-client-mock-jest";
+import { describe, it, expect } from "vitest";
 import nock from "nock";
 import { PublishCommand, SNSClient } from "@aws-sdk/client-sns";
 import { mockClient } from "aws-sdk-client-mock";
-import { jsonToXml } from "../src/utils";
-import { getRecordsByIds, insertRecords } from "../src/db";
-import { runMetalTracker } from "../src/main";
+import { jsonToXml } from "../src/utils.js";
+import { getRecordsByIds, insertRecords } from "../src/db.js";
+import { runMetalTracker } from "../src/main.js";
 import {
-  closeDb,
   createFakeConcertsMetalResponse,
   createFakeWordPressJsonV2Posts,
   fakeConcertsMetalResponseToRecords,
   fakeWordPressJsonV2PostsToRecords,
-  setupDb,
-} from "./testUtils";
+} from "./utils/helpers.js";
 
-beforeAll(() => {
-  setupDb();
-});
-
-afterAll(() => {
-  closeDb();
-});
+const snsMock = mockClient(SNSClient).resolves({});
 
 describe("runMetalTracker", () => {
   it("should save records returned by the endpoints and send them to Amazon SNS", async () => {
-    const snsMock = mockClient(SNSClient).resolves({});
-
     // Add previously existing records in the database, which will be returned by the endpoint but should be ignored
     const previousAngryMetalGuyRecords = createFakeWordPressJsonV2Posts();
     insertRecords(
@@ -57,8 +47,7 @@ describe("runMetalTracker", () => {
       expectedSaved.map((record) => record.id),
     );
     expect(recordsSaved).toStrictEqual(expectedSaved);
-    expect(snsMock).toHaveReceivedCommandTimes(
-      PublishCommand,
+    expect(snsMock.commandCalls(PublishCommand)).toHaveLength(
       expectedSaved.length,
     );
   });
