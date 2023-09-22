@@ -8,8 +8,8 @@ export const recordTypes = {
 export type RecordType = ObjectValues<typeof recordTypes>;
 
 export const sources = {
-  angryMetalGuy: "angryMetalGuy",
-  concertsMetal: "concertsMetal",
+  angryMetalGuy: "Angry Metal Guy",
+  concertsMetal: "Concerts-Metal.com",
 } as const;
 
 export type SourceName = ObjectValues<typeof sources>;

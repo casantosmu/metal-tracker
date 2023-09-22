@@ -1,7 +1,7 @@
 import { z } from "zod";
 import dayjs from "dayjs";
 import { fetcher, removeHtml, xmlParser } from "./utils.js";
-import { type TRecord, type SourceName, sources } from "./entities.js";
+import { type TRecord, sources } from "./entities.js";
 
 const wordPressUtils = {
   maxPerPage: 100,
@@ -18,7 +18,6 @@ const wordPressUtils = {
 };
 
 const angryMetalGuy = {
-  sourceName: sources.angryMetalGuy,
   async getLastRecords(): Promise<TRecord[]> {
     const progressiveMetalTag = 8161;
     const reviewCategory = 13;
@@ -48,7 +47,7 @@ const angryMetalGuy = {
           excerpt: { rendered: summary },
         }) => ({
           type: "review",
-          sourceName: this.sourceName,
+          sourceName: sources.angryMetalGuy,
           id: id.toString(),
           title: removeHtml(title),
           link,
@@ -60,9 +59,8 @@ const angryMetalGuy = {
 };
 
 const concertsMetal = {
-  sourceName: sources.concertsMetal,
   async getLastRecords(): Promise<TRecord[]> {
-    const response = await fetcher.get("https://concerts-metal.com", {
+    const response = await fetcher.get("https://es.concerts-metal.com", {
       path: "/rss/ES_Barcelona.xml",
       responseType: "text",
     });
@@ -72,12 +70,12 @@ const concertsMetal = {
       .parse(json)
       .rss.channel[0].item.map((item) => ({
         type: "concert",
-        sourceName: this.sourceName,
+        sourceName: sources.concertsMetal,
         id: item.guid[0],
-        title: item.title[0],
+        title: removeHtml(item.title[0]),
         link: item.link[0],
         publicationDate: item.pubDate[0],
-        description: item.description[0],
+        description: removeHtml(item.description[0]),
       }));
   },
   jsonResponseSchema: z.object({
@@ -101,14 +99,11 @@ const concertsMetal = {
   }),
 };
 
-type Integrations = {
-  [K in SourceName]: {
-    sourceName: K;
-    getLastRecords: () => Promise<TRecord[]>;
-  };
-};
+interface Integration {
+  getLastRecords: () => Promise<TRecord[]>;
+}
 
-const integrations: Integrations = {
+const integrations: Record<string, Integration> = {
   angryMetalGuy,
   concertsMetal,
 };
