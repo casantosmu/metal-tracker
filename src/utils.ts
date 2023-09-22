@@ -90,3 +90,6 @@ export const truncateString = (
   string.length <= maxLong
     ? string
     : `${string.slice(0, maxLong - end.length)}${end}`;
+
+export const subtractDays = (from: Date, days: number): Date =>
+  new Date(from.getTime() - days * 24 * 60 * 60 * 1000);

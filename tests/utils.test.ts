@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { buildUrl } from "../src/utils.js";
+import { buildUrl, subtractDays } from "../src/utils.js";
 
 describe("buildUrl", () => {
   describe("when receives url: 'http://url.com/', path: '/some/path/' and params: '{ foo: 'bar', num: 2 }'", () => {
@@ -17,6 +17,18 @@ describe("buildUrl", () => {
       const result = buildUrl(url, options);
 
       expect(result).toBe(expected);
+    });
+  });
+});
+
+describe("subtractDays", () => {
+  describe("when receives 'May 27, 2009' date and 7 days", () => {
+    it("should return a date 'May 20, 2009'", () => {
+      const expectedResult = new Date("May 20, 2009");
+
+      const result = subtractDays(new Date("May 27, 2009"), 7);
+
+      expect(result.toISOString()).toStrictEqual(expectedResult.toISOString());
     });
   });
 });
