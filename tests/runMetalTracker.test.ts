@@ -2,15 +2,15 @@ import { describe, it, expect } from "vitest";
 import nock from "nock";
 import { PublishCommand, SNSClient } from "@aws-sdk/client-sns";
 import { mockClient } from "aws-sdk-client-mock";
-import { jsonToXml } from "../src/utils";
-import { getRecordsByIds, insertRecords } from "../src/db";
-import { runMetalTracker } from "../src/main";
+import { jsonToXml } from "../src/utils.js";
+import { getRecordsByIds, insertRecords } from "../src/db.js";
+import { runMetalTracker } from "../src/main.js";
 import {
   createFakeConcertsMetalResponse,
   createFakeWordPressJsonV2Posts,
   fakeConcertsMetalResponseToRecords,
   fakeWordPressJsonV2PostsToRecords,
-} from "./utils/helpers";
+} from "./utils/helpers.js";
 
 const snsMock = mockClient(SNSClient).resolves({});
 

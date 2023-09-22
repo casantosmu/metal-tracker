@@ -1,4 +1,4 @@
-import { ObjectValues } from "./types";
+import type { ObjectValues } from "./types.js";
 
 export const recordTypes = {
   review: "review",

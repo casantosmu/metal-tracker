@@ -1,8 +1,8 @@
 import { inspect } from "util";
-import { getLastRecords } from "./integrations";
-import { insertRecords } from "./db";
-import { sendRecordsEmail } from "./emailClient";
-import { getEnv } from "./config";
+import { getLastRecords } from "./integrations.js";
+import { insertRecords } from "./db.js";
+import { sendRecordsEmail } from "./emailClient.js";
+import { getEnv } from "./config.js";
 
 export const runMetalTracker = async (): Promise<void> => {
   console.log("Initiating metal tracking process...");

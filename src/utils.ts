@@ -1,4 +1,4 @@
-import fetch, { RequestInit } from "node-fetch";
+import fetch, { type RequestInit } from "node-fetch";
 import { stripHtml } from "string-strip-html";
 import { Parser as XmlParser, Builder as XmlBuilder } from "xml2js";
 

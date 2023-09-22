@@ -1,9 +1,5 @@
-import { dropTables, runMigrations } from "../../src/db";
+import { runMigrations } from "../../src/db.js";
 
 export const setup = (): void => {
   runMigrations();
-};
-
-export const teardown = (): void => {
-  dropTables();
 };

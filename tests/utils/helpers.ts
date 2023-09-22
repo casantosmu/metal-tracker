@@ -1,6 +1,6 @@
 import { generateMock } from "@anatine/zod-mock";
 import { z } from "zod";
-import { TRecord } from "../../src/entities";
+import type { TRecord } from "../../src/entities.js";
 
 interface FakeWordPressJsonV2Post {
   link: string;

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { buildUrl } from "../src/utils";
+import { buildUrl } from "../src/utils.js";
 
 describe("buildUrl", () => {
   describe("when receives url: 'http://url.com/', path: '/some/path/' and params: '{ foo: 'bar', num: 2 }'", () => {

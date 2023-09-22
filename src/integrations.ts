@@ -1,7 +1,7 @@
 import { z } from "zod";
 import dayjs from "dayjs";
-import { fetcher, removeHtml, xmlParser } from "./utils";
-import { TRecord, SourceName, sources } from "./entities";
+import { fetcher, removeHtml, xmlParser } from "./utils.js";
+import { type TRecord, type SourceName, sources } from "./entities.js";
 
 const wordPressUtils = {
   maxPerPage: 100,
