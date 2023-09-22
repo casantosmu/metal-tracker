@@ -32,7 +32,7 @@ export const fakeWordPressJsonV2PostsToRecords = (
 ): TRecord[] =>
   posts.map((post) => ({
     type: "review",
-    sourceName: "angryMetalGuy",
+    sourceName: "Angry Metal Guy",
     id: post.id.toString(),
     title: post.title.rendered,
     link: post.link,
@@ -93,7 +93,7 @@ export const fakeConcertsMetalResponseToRecords = (
 ): TRecord[] =>
   response.rss.channel[0].item.map((item) => ({
     type: "concert",
-    sourceName: "concertsMetal",
+    sourceName: "Concerts-Metal.com",
     id: item.guid[0],
     title: item.title[0],
     link: item.link[0],

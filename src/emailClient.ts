@@ -91,7 +91,12 @@ export const sendRecordsEmail = async (
     emailSubject = getAsciiCharacters(emailSubject);
     emailSubject = truncateString(emailSubject, snsSubjectMaxLong);
 
-    const date = record.publicationDate.toString();
+    const date = record.publicationDate.toLocaleDateString("es-ES", {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
     const emailMessage = `A new ${record.type} has been published on ${record.sourceName}\n\nTitle: ${record.title}\nDate: ${date}\nDescription: ${record.description}\nLink: ${record.link}`;
 
     return snsClient.send(

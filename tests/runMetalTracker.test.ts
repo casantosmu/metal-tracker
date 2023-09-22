@@ -32,7 +32,7 @@ describe("runMetalTracker", () => {
       ]);
 
     const fakeConcertsMetal = createFakeConcertsMetalResponse();
-    nock("https://concerts-metal.com")
+    nock("https://es.concerts-metal.com")
       .get("/rss/ES_Barcelona.xml")
       .reply(200, jsonToXml(fakeConcertsMetal));
 
