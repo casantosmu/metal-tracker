@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "start": "node .",
-    "build": "rimraf dist && tsc --project tsconfig.build.json",
+    "build": "rm -r dist && tsc --project tsconfig.build.json && cp -r src/migrations dist",
     "dev": "tsx watch -r dotenv/config --inspect src/index.ts",
     "test": "vitest",
     "test:coverage": "vitest run --coverage",
@@ -17,14 +17,13 @@
   "dependencies": {
     "@aws-sdk/client-sns": "^3.414.0",
     "better-sqlite3": "^8.6.0",
-    "dayjs": "^1.11.10",
     "node-fetch": "^3.3.2",
     "string-strip-html": "^13.4.3",
     "xml2js": "^0.6.2",
     "zod": "^3.22.2"
   },
   "devDependencies": {
-    "@anatine/zod-mock": "^3.13.2",
+    "@faker-js/faker": "^8.1.0",
     "@types/better-sqlite3": "^7.6.5",
     "@types/node": "^20.6.3",
     "@types/xml2js": "^0.4.12",
@@ -42,7 +41,6 @@
     "lint-staged": "^14.0.1",
     "nock": "^13.3.3",
     "prettier": "3.0.3",
-    "rimraf": "^5.0.1",
     "tsx": "^3.12.10",
     "typescript": "^5.2.2",
     "vitest": "^0.34.5"

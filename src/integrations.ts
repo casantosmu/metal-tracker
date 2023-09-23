@@ -1,6 +1,5 @@
 import { z } from "zod";
-import dayjs from "dayjs";
-import { fetcher, removeHtml, xmlParser } from "./utils.js";
+import { fetcher, removeHtml, subtractDays, xmlParser } from "./utils.js";
 import { type TRecord, sources } from "./entities.js";
 
 const wordPressUtils = {
@@ -21,7 +20,7 @@ const angryMetalGuy = {
   async getLastRecords(): Promise<TRecord[]> {
     const progressiveMetalTag = 8161;
     const reviewCategory = 13;
-    const fetchPostInTheLastDays = 31;
+    const fetchPostAfter = subtractDays(new Date(Date.now()), 31);
 
     const response = await fetcher.get("https://angrymetalguy.com", {
       path: wordPressUtils.jsonV2PostsPath,
@@ -30,7 +29,7 @@ const angryMetalGuy = {
         per_page: wordPressUtils.maxPerPage,
         order: "desc",
         orderby: "date",
-        after: dayjs().subtract(fetchPostInTheLastDays, "days").toISOString(),
+        after: fetchPostAfter.toISOString(),
         tags: progressiveMetalTag,
         categories: reviewCategory,
       },

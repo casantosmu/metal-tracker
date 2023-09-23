@@ -9,8 +9,8 @@ import {
 import { getEnv } from "./config.js";
 import type { TRecord } from "./entities.js";
 import {
-  getAsciiCharacters,
-  removeControlCharacters,
+  isAsciiCharacter,
+  isControlCharacter,
   truncateString,
 } from "./utils.js";
 
@@ -86,10 +86,16 @@ export const sendRecordsEmail = async (
   topicArn: string,
 ): Promise<void> => {
   const promises = records.map(async (record) => {
-    let emailSubject = `Metal Tracker - New ${record.type}: ${record.title}`;
-    emailSubject = removeControlCharacters(emailSubject);
-    emailSubject = getAsciiCharacters(emailSubject);
-    emailSubject = truncateString(emailSubject, snsSubjectMaxLong);
+    const initialSubject = `Metal Tracker - New ${record.type}: ${record.title}`;
+    const cleanSubject = initialSubject
+      .split("")
+      .reduce((result, character) => {
+        if (isAsciiCharacter(character) && !isControlCharacter(character)) {
+          return result + character;
+        }
+        return result;
+      });
+    const finalSubject = truncateString(cleanSubject, snsSubjectMaxLong);
 
     const date = record.publicationDate.toLocaleDateString("es-ES", {
       weekday: "long",
@@ -101,7 +107,7 @@ export const sendRecordsEmail = async (
 
     return snsClient.send(
       new PublishCommand({
-        Subject: emailSubject,
+        Subject: finalSubject,
         Message: emailMessage,
         TopicArn: topicArn,
       }),
