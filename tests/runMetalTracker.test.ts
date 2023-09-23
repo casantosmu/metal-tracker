@@ -2,14 +2,11 @@ import { describe, it, expect } from "vitest";
 import nock from "nock";
 import { PublishCommand, SNSClient } from "@aws-sdk/client-sns";
 import { mockClient } from "aws-sdk-client-mock";
-import { toXml } from "../src/utils.js";
 import { getRecordsByIds, insertRecords } from "../src/db.js";
 import { runMetalTracker } from "../src/main.js";
 import {
-  createFakeConcertsMetalResponse,
-  createFakeWordPressJsonV2Posts,
-  fakeConcertsMetalResponseToRecords,
-  fakeWordPressJsonV2PostsToRecords,
+  FakeConcertsMetalList,
+  FakeWordPressPostsV2,
 } from "./utils/helpers.js";
 
 const snsMock = mockClient(SNSClient).resolves({});
@@ -17,28 +14,32 @@ const snsMock = mockClient(SNSClient).resolves({});
 describe("runMetalTracker", () => {
   it("should save records returned by the endpoints and send them to Amazon SNS", async () => {
     // Add previously existing records in the database, which will be returned by the endpoint but should be ignored
-    const previousAngryMetalGuyRecords = createFakeWordPressJsonV2Posts();
-    insertRecords(
-      fakeWordPressJsonV2PostsToRecords(previousAngryMetalGuyRecords),
-    );
+    const previousAngryMetalGuyRecords = new FakeWordPressPostsV2({
+      sourceName: "Angry Metal Guy",
+      type: "review",
+    });
+    insertRecords(previousAngryMetalGuyRecords.toRecords());
 
-    const newAngryMetalGuyRecords = createFakeWordPressJsonV2Posts();
+    const newAngryMetalGuyRecords = new FakeWordPressPostsV2({
+      sourceName: "Angry Metal Guy",
+      type: "review",
+    });
     nock("https://angrymetalguy.com")
       .get("/wp-json/wp/v2/posts")
       .query(true)
       .reply(200, [
-        ...previousAngryMetalGuyRecords,
-        ...newAngryMetalGuyRecords,
+        ...previousAngryMetalGuyRecords.toJson(),
+        ...newAngryMetalGuyRecords.toJson(),
       ]);
 
-    const fakeConcertsMetal = createFakeConcertsMetalResponse();
+    const fakeConcertsMetal = new FakeConcertsMetalList();
     nock("https://es.concerts-metal.com")
       .get("/rss/ES_Barcelona.xml")
-      .reply(200, toXml(fakeConcertsMetal));
+      .reply(200, fakeConcertsMetal.toXml());
 
     const expectedSaved = [
-      ...fakeWordPressJsonV2PostsToRecords(newAngryMetalGuyRecords),
-      ...fakeConcertsMetalResponseToRecords(fakeConcertsMetal),
+      ...newAngryMetalGuyRecords.toRecords(),
+      ...fakeConcertsMetal.toRecords(),
     ];
 
     await runMetalTracker();
