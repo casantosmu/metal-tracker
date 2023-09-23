@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import nock from "nock";
 import { PublishCommand, SNSClient } from "@aws-sdk/client-sns";
 import { mockClient } from "aws-sdk-client-mock";
-import { jsonToXml } from "../src/utils.js";
+import { toXml } from "../src/utils.js";
 import { getRecordsByIds, insertRecords } from "../src/db.js";
 import { runMetalTracker } from "../src/main.js";
 import {
@@ -34,7 +34,7 @@ describe("runMetalTracker", () => {
     const fakeConcertsMetal = createFakeConcertsMetalResponse();
     nock("https://es.concerts-metal.com")
       .get("/rss/ES_Barcelona.xml")
-      .reply(200, jsonToXml(fakeConcertsMetal));
+      .reply(200, toXml(fakeConcertsMetal));
 
     const expectedSaved = [
       ...fakeWordPressJsonV2PostsToRecords(newAngryMetalGuyRecords),

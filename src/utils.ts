@@ -67,20 +67,14 @@ export const removeHtml = (string: string): string => stripHtml(string).result;
 export const xmlParser = (string: string): Promise<unknown> =>
   new XmlParser().parseStringPromise(string);
 
-export const jsonToXml = (json: unknown): string =>
-  new XmlBuilder().buildObject(json);
+export const toXml = (value: unknown): string =>
+  new XmlBuilder().buildObject(value);
 
-export const removeControlCharacters = (string: string): string =>
-  string
-    .split("")
-    .filter((character) => character.charCodeAt(0) > 31)
-    .join("");
+export const isControlCharacter = (character: string): boolean =>
+  character.charCodeAt(0) <= 31;
 
-export const getAsciiCharacters = (string: string): string =>
-  string
-    .split("")
-    .filter((character) => character.charCodeAt(0) <= 255)
-    .join("");
+export const isAsciiCharacter = (character: string): boolean =>
+  character.charCodeAt(0) <= 255;
 
 export const truncateString = (
   string: string,
