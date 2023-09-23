@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "start": "node .",
-    "build": "rm -r dist && tsc --project tsconfig.build.json && cp -r src/migrations dist",
+    "build": "rm -fr dist && tsc --project tsconfig.build.json && cp -r src/migrations dist",
     "dev": "tsx watch -r dotenv/config --inspect src/index.ts",
     "test": "vitest",
     "test:coverage": "vitest run --coverage",
