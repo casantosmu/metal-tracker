@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "start": "node .",
-    "build": "rimraf dist && tsc --project tsconfig.build.json",
+    "build": "rm -r dist && tsc --project tsconfig.build.json && cp -r src/migrations dist",
     "dev": "tsx watch -r dotenv/config --inspect src/index.ts",
     "test": "vitest",
     "test:coverage": "vitest run --coverage",
@@ -41,7 +41,6 @@
     "lint-staged": "^14.0.1",
     "nock": "^13.3.3",
     "prettier": "3.0.3",
-    "rimraf": "^5.0.1",
     "tsx": "^3.12.10",
     "typescript": "^5.2.2",
     "vitest": "^0.34.5"
