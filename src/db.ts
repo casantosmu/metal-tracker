@@ -77,13 +77,6 @@ export const runMigrations = (): void => {
   console.log("All new migrations have been successfully executed.");
 };
 
-export const dropTables = (): void => {
-  db.exec("DROP TABLE IF EXISTS 'migrations';");
-  db.exec("DROP TABLE IF EXISTS 'records';");
-  db.exec("DROP TABLE IF EXISTS 'record_types';");
-  db.exec("DROP TABLE IF EXISTS 'sources';");
-};
-
 interface RecordTable {
   type: RecordType;
   source: SourceName;
