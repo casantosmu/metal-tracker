@@ -20,7 +20,7 @@ const angryMetalGuy = {
   async getLastRecords(): Promise<TRecord[]> {
     const progressiveMetalTag = 8161;
     const reviewCategory = 13;
-    const fetchPostAfter = subtractDays(new Date(Date.now()), 31);
+    const fetchPostsAfter = subtractDays(new Date(Date.now()), 31);
 
     const response = await fetcher.get("https://angrymetalguy.com", {
       path: wordPressUtils.jsonV2PostsPath,
@@ -29,7 +29,7 @@ const angryMetalGuy = {
         per_page: wordPressUtils.maxPerPage,
         order: "desc",
         orderby: "date",
-        after: fetchPostAfter.toISOString(),
+        after: fetchPostsAfter.toISOString(),
         tags: progressiveMetalTag,
         categories: reviewCategory,
       },

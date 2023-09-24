@@ -20,7 +20,7 @@ const parseMigrations = (migrationsDir: string): Migration[] => {
   const filenames = fs.readdirSync(migrationsDir);
 
   return filenames.map((filename) => {
-    const [id] = filename.split("-");
+    const id = filename.slice(0, filename.indexOf("-"));
     const idToNumber = z.coerce.number().int().positive().safeParse(id);
     const isValidFormat = filename.endsWith(".sql");
 

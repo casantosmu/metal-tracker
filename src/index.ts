@@ -1,8 +1,8 @@
 import { runMigrations } from "./db.js";
 import { runMetalTracker } from "./main.js";
-import { parseArguments } from "./utils.js";
+import { argvParser } from "./utils.js";
 
-const args = parseArguments(process.argv.slice(2));
+const args = argvParser(process.argv.slice(2));
 
 if (!("topic-arn" in args)) {
   console.error(

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { buildUrl, parseArguments, subtractDays } from "../src/utils.js";
+import { buildUrl, argvParser, subtractDays } from "../src/utils.js";
 
 describe("buildUrl", () => {
   describe("when receives url: 'http://url.com/', path: '/some/path/' and params: '{ foo: 'bar', num: 2 }'", () => {
@@ -28,23 +28,20 @@ describe("subtractDays", () => {
 
       const result = subtractDays(new Date("May 27, 2009"), 7);
 
-      expect(result.toISOString()).toStrictEqual(expectedResult.toISOString());
+      expect(result).toStrictEqual(expectedResult);
     });
   });
 });
 
-describe("parseArguments", () => {
-  describe("when receives a list with --name=carlos and --email=example@domain.com", () => {
-    it("should return an object with name: carlos and email: example@domain.com", () => {
+describe("argvParser", () => {
+  describe("when receives a list with --name=carlos and --secret=WfUYD$i9(=", () => {
+    it("should return an object with name: carlos and secret: WfUYD$i9(=", () => {
       const expectedResult = {
         name: "carlos",
-        email: "example@domain.com",
+        secret: "WfUYD$i9(=",
       };
 
-      const result = parseArguments([
-        "--name=carlos",
-        "--email=example@domain.com",
-      ]);
+      const result = argvParser(["--name=carlos", "--secret=WfUYD$i9(="]);
 
       expect(result).toStrictEqual(expectedResult);
     });
