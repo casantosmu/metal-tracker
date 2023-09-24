@@ -50,14 +50,5 @@ jobs:
       - name: Install Dependencies
         run: npm ci
 
-      - name: Create .env file
-        run: |
-          echo "AWS_ACCESS_KEY_ID=XXXXXXXX" >> .env
-          echo "AWS_SECRET_ACCESS_KEY=XXXXXXXX" >> .env
-          echo "AWS_REGION=us-east-1" >> .env
-          echo "AWS_SNS_TOPIC_ARN=arn:aws:sns:us-east-1:XXXXXXXX:aws-sns-topic" >> .env
-          echo "SNS_TOPIC_NAME=aws-sns-topic" >> .env
-          echo "EMAIL_ADDRESS=example@example.com" >> .env
-
       - name: Run tests
         run: npm run test:coverage

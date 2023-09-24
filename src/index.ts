@@ -1,5 +1,14 @@
-import { loadEnv } from "./config.js";
+import { runMigrations } from "./db.js";
 import { runMetalTracker } from "./main.js";
+import { parseArguments } from "./utils.js";
 
-loadEnv();
-await runMetalTracker();
+const args = parseArguments(process.argv.slice(2));
+
+if (!("topic-arn" in args)) {
+  console.error(
+    "Error: You must specify a topic ARN as a command-line argument. Example: 'node index.js --topic-arn=arn:aws:sns:us-east-1:XXXXXXXX:aws-sns-topic'",
+  );
+} else {
+  runMigrations();
+  await runMetalTracker(args["topic-arn"]);
+}

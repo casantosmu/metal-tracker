@@ -87,3 +87,17 @@ export const truncateString = (
 
 export const subtractDays = (from: Date, days: number): Date =>
   new Date(from.getTime() - days * 24 * 60 * 60 * 1000);
+
+export const parseArguments = (args: string[]): Record<string, string> => {
+  const result: Record<string, string> = {};
+
+  for (const arg of args) {
+    const [key, value] = arg.slice("--".length).split("=");
+
+    if (key && value) {
+      result[key] = value;
+    }
+  }
+
+  return result;
+};

@@ -2,9 +2,8 @@ import { inspect } from "util";
 import { getLastRecords } from "./integrations.js";
 import { insertRecords } from "./db.js";
 import { sendRecordsEmail } from "./emailClient.js";
-import { getEnv } from "./config.js";
 
-export const runMetalTracker = async (): Promise<void> => {
+export const runMetalTracker = async (topicArn: string): Promise<void> => {
   console.log("Initiating metal tracking process...");
 
   const lastRecords = await getLastRecords();
@@ -24,7 +23,7 @@ export const runMetalTracker = async (): Promise<void> => {
     return;
   }
 
-  await sendRecordsEmail(newRecords, getEnv().AWS_SNS_TOPIC_ARN);
+  await sendRecordsEmail(newRecords, topicArn);
 
   console.log(
     `Successfully sent an email with new records:\n${inspect(newRecords, {

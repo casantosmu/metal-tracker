@@ -42,7 +42,7 @@ describe("runMetalTracker", () => {
       ...fakeConcertsMetal.toRecords(),
     ];
 
-    await runMetalTracker();
+    await runMetalTracker("topic-arn");
 
     const recordsSaved = getRecordsByIds(
       expectedSaved.map((record) => record.id),

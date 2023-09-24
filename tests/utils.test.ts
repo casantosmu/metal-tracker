@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { buildUrl, subtractDays } from "../src/utils.js";
+import { buildUrl, parseArguments, subtractDays } from "../src/utils.js";
 
 describe("buildUrl", () => {
   describe("when receives url: 'http://url.com/', path: '/some/path/' and params: '{ foo: 'bar', num: 2 }'", () => {
@@ -29,6 +29,24 @@ describe("subtractDays", () => {
       const result = subtractDays(new Date("May 27, 2009"), 7);
 
       expect(result.toISOString()).toStrictEqual(expectedResult.toISOString());
+    });
+  });
+});
+
+describe("parseArguments", () => {
+  describe("when receives a list with --name=carlos and --email=example@domain.com", () => {
+    it("should return an object with name: carlos and email: example@domain.com", () => {
+      const expectedResult = {
+        name: "carlos",
+        email: "example@domain.com",
+      };
+
+      const result = parseArguments([
+        "--name=carlos",
+        "--email=example@domain.com",
+      ]);
+
+      expect(result).toStrictEqual(expectedResult);
     });
   });
 });

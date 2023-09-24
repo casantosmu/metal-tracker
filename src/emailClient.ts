@@ -6,7 +6,6 @@ import {
   CreateTopicCommand,
   PublishCommand,
 } from "@aws-sdk/client-sns";
-import { getEnv } from "./config.js";
 import type { TRecord } from "./entities.js";
 import {
   isAsciiCharacter,
@@ -18,10 +17,10 @@ const snsSubjectMaxLong = 100;
 
 const snsClient = new SNSClient({});
 
-export const setupSns = async (): Promise<void> => {
-  const topicName = getEnv().SNS_TOPIC_NAME;
-  const emailAddress = getEnv().EMAIL_ADDRESS;
-
+export const setupSns = async (
+  emailAddress: string,
+  topicName: string,
+): Promise<void> => {
   const topicsList = await snsClient.send(new ListTopicsCommand({}));
 
   const foundTopic = topicsList.Topics?.find(
