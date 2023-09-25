@@ -4,7 +4,6 @@ FROM node:18.17.1-bullseye-slim AS base
 FROM base AS deps
 WORKDIR /app
 
-# Install dependencies
 COPY package*.json ./
 RUN npm ci
 
@@ -16,11 +15,14 @@ COPY . .
 
 RUN npm run build
 
-# Production image, install prod dependencies, copy all the files and run Node
+# Production image, create db directory, install prod dependencies, copy all the files and run Node
 FROM base AS prod
 WORKDIR /app
 
 ENV NODE_ENV production
+
+RUN mkdir -p sqlite
+RUN chown -R node sqlite
 
 COPY package*.json ./
 # Disable husky
@@ -31,4 +33,4 @@ COPY --from=builder /app/dist ./
 
 USER node
 
-CMD ["node", "index.js"]
+CMD ["sh", "-c", "node index.js --topic-arn=${TOPIC_ARN}"]

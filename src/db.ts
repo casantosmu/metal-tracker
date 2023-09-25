@@ -20,7 +20,7 @@ const parseMigrations = (migrationsDir: string): Migration[] => {
   const filenames = fs.readdirSync(migrationsDir);
 
   return filenames.map((filename) => {
-    const [id] = filename.split("-");
+    const id = filename.slice(0, filename.indexOf("-"));
     const idToNumber = z.coerce.number().int().positive().safeParse(id);
     const isValidFormat = filename.endsWith(".sql");
 
@@ -75,13 +75,6 @@ export const runMigrations = (): void => {
   run();
 
   console.log("All new migrations have been successfully executed.");
-};
-
-export const dropTables = (): void => {
-  db.exec("DROP TABLE IF EXISTS 'migrations';");
-  db.exec("DROP TABLE IF EXISTS 'records';");
-  db.exec("DROP TABLE IF EXISTS 'record_types';");
-  db.exec("DROP TABLE IF EXISTS 'sources';");
 };
 
 interface RecordTable {

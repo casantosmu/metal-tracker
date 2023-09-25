@@ -9,10 +9,10 @@ import {
   FakeWordPressPostsV2,
 } from "./utils/helpers.js";
 
-const snsMock = mockClient(SNSClient).resolves({});
+const snsMock = mockClient(SNSClient);
 
 describe("runMetalTracker", () => {
-  it("should save records returned by the endpoints and send them to Amazon SNS", async () => {
+  it("should save records returned by the endpoints and send them to Amazon SNS with the received topic arn", async () => {
     // Add previously existing records in the database, which will be returned by the endpoint but should be ignored
     const previousAngryMetalGuyRecords = new FakeWordPressPostsV2({
       sourceName: "Angry Metal Guy",
@@ -42,14 +42,17 @@ describe("runMetalTracker", () => {
       ...fakeConcertsMetal.toRecords(),
     ];
 
-    await runMetalTracker();
+    const topicArn = "topic-arn";
+
+    await runMetalTracker(topicArn);
 
     const recordsSaved = getRecordsByIds(
       expectedSaved.map((record) => record.id),
     );
     expect(recordsSaved).toStrictEqual(expectedSaved);
-    expect(snsMock.commandCalls(PublishCommand)).toHaveLength(
-      expectedSaved.length,
-    );
+    const callsToAwsSns = snsMock.commandCalls(PublishCommand, {
+      TopicArn: topicArn,
+    });
+    expect(callsToAwsSns).toHaveLength(expectedSaved.length);
   });
 });
