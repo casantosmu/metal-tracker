@@ -1,10 +1,10 @@
+import { argvParser } from "./utils.js";
 import { runMigrations } from "./db.js";
 import { runMetalTracker } from "./main.js";
-import { argvParser } from "./utils.js";
 
 const args = argvParser(process.argv.slice(2));
 
-if ("topic-arn" in args) {
+if (args["topic-arn"]) {
   runMigrations();
   await runMetalTracker(args["topic-arn"]);
 } else {
