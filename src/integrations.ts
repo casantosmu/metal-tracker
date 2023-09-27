@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { fetcher, removeHtml, subtractDays, xmlParser } from "./utils.js";
-import { type TRecord, sources } from "./entities.js";
+import { type TRecord, sources, recordTypes } from "./entities.js";
 
 const wordPressUtils = {
   maxPerPage: 100,
@@ -35,25 +35,25 @@ const angryMetalGuy = {
       },
     });
 
-    return wordPressUtils.jsonV2PostSchema
-      .parse(response)
-      .map(
-        ({
-          id,
-          date: publicationDate,
-          link,
-          title: { rendered: title },
-          excerpt: { rendered: summary },
-        }) => ({
-          type: "review",
-          sourceName: sources.angryMetalGuy,
-          id: id.toString(),
-          title: removeHtml(title),
-          link,
-          publicationDate,
-          description: removeHtml(summary),
-        }),
-      );
+    const validated = wordPressUtils.jsonV2PostSchema.parse(response);
+
+    return validated.map(
+      ({
+        id,
+        date: publicationDate,
+        link,
+        title: { rendered: title },
+        excerpt: { rendered: summary },
+      }) => ({
+        type: recordTypes.review,
+        sourceName: sources.angryMetalGuy,
+        id: id.toString(),
+        title: removeHtml(title),
+        link,
+        publicationDate,
+        description: removeHtml(summary),
+      }),
+    );
   },
 };
 
@@ -65,17 +65,17 @@ const concertsMetal = {
     });
     const json = await xmlParser(response);
 
-    return this.jsonResponseSchema
-      .parse(json)
-      .rss.channel[0].item.map((item) => ({
-        type: "concert",
-        sourceName: sources.concertsMetal,
-        id: item.guid[0],
-        title: removeHtml(item.title[0]),
-        link: item.link[0],
-        publicationDate: item.pubDate[0],
-        description: removeHtml(item.description[0]),
-      }));
+    const validated = this.jsonResponseSchema.parse(json);
+
+    return validated.rss.channel[0].item.map((item) => ({
+      type: recordTypes.concert,
+      sourceName: sources.concertsMetal,
+      id: item.guid[0],
+      title: removeHtml(item.title[0]),
+      link: item.link[0],
+      publicationDate: item.pubDate[0],
+      description: removeHtml(item.description[0]),
+    }));
   },
   jsonResponseSchema: z.object({
     rss: z.object({

@@ -12,18 +12,18 @@ describe("buildUrl", () => {
           num: 2,
         },
       };
-      const expected = "http://url.com/some/path?foo=bar&num=2";
+      const expectedResult = "http://url.com/some/path?foo=bar&num=2";
 
       const result = buildUrl(url, options);
 
-      expect(result).toBe(expected);
+      expect(result).toBe(expectedResult);
     });
   });
 });
 
 describe("subtractDays", () => {
-  describe("when receives 'May 27, 2009' date and 7 days", () => {
-    it("should return a date 'May 20, 2009'", () => {
+  describe("when subtracting 7 days from 'May 27, 2009'", () => {
+    it("should return the date 'May 20, 2009'", () => {
       const expectedResult = new Date("May 20, 2009");
 
       const result = subtractDays(new Date("May 27, 2009"), 7);
@@ -32,7 +32,6 @@ describe("subtractDays", () => {
     });
   });
 });
-
 describe("argvParser", () => {
   describe("when receives a list with --name=carlos and --secret=WfUYD$i9(=", () => {
     it("should return an object with name: carlos and secret: WfUYD$i9(=", () => {
