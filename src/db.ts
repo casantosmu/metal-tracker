@@ -20,7 +20,7 @@ const parseMigrations = (migrationsDir: string): Migration[] => {
   const filenames = fs.readdirSync(migrationsDir);
 
   return filenames.map((filename) => {
-    const id = filename.slice(0, filename.indexOf("-"));
+    const [id] = filename.split("-", 1);
     const idToNumber = z.coerce.number().int().positive().safeParse(id);
     const isValidFormat = filename.endsWith(".sql");
 
@@ -39,9 +39,8 @@ const parseMigrations = (migrationsDir: string): Migration[] => {
 
 export const runMigrations = (): void => {
   const migrationsDir = new URL("migrations", import.meta.url).pathname;
-  const migrations = parseMigrations(migrationsDir);
-
   console.log(`Checking for new migrations in directory: ${migrationsDir}`);
+  const migrations = parseMigrations(migrationsDir);
 
   db.exec(
     "CREATE TABLE IF NOT EXISTS migrations (id INTEGER NOT NULL PRIMARY KEY, source TEXT NOT NULL);",
