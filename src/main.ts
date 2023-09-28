@@ -2,14 +2,15 @@ import { inspect } from "util";
 import { getLastRecords } from "./integrations.js";
 import { insertRecords } from "./db.js";
 import { sendRecordsEmail } from "./emailClient.js";
+import { logger } from "./utils.js";
 
 export const runMetalTracker = async (topicArn: string): Promise<void> => {
-  console.log("Initiating metal tracking process...");
+  logger.info("Initiating metal tracking process...");
 
   const lastRecords = await getLastRecords();
 
   if (!lastRecords.length) {
-    console.log("No new records were found.");
+    logger.info("No new records were found.");
     return;
   }
 
@@ -19,17 +20,17 @@ export const runMetalTracker = async (topicArn: string): Promise<void> => {
   });
 
   if (!newRecords.length) {
-    console.log("No new records were added to the database.");
+    logger.info("No new records were added to the database.");
     return;
   }
 
   await sendRecordsEmail(newRecords, topicArn);
 
-  console.log(
+  logger.info(
     `Successfully sent an email with new records:\n${inspect(newRecords, {
       depth: null,
     })}`,
   );
 
-  console.log("Metal tracking process completed.");
+  logger.info("Metal tracking process completed.");
 };

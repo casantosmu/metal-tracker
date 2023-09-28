@@ -1,6 +1,9 @@
 import fetch, { type RequestInit } from "node-fetch";
 import { stripHtml } from "string-strip-html";
 import { Parser as XmlParser, Builder as XmlBuilder } from "xml2js";
+import { pino } from "pino";
+
+export const logger = pino();
 
 interface UrlOptions {
   path?: string;
