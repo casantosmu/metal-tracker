@@ -1,6 +1,11 @@
 import { z } from "zod";
 import { fetcher, removeHtml, subtractDays, xmlParser } from "./utils.js";
-import { type TRecord, sources, recordTypes } from "./entities.js";
+import {
+  type TRecord,
+  sources,
+  recordTypes,
+  type SourceName,
+} from "./entities.js";
 
 const wordPressUtils = {
   maxPerPage: 100,
@@ -17,6 +22,7 @@ const wordPressUtils = {
 };
 
 const angryMetalGuy = {
+  sourceName: sources.angryMetalGuy,
   async getLastRecords(): Promise<TRecord[]> {
     const progressiveMetalTag = 8161;
     const reviewCategory = 13;
@@ -58,6 +64,7 @@ const angryMetalGuy = {
 };
 
 const concertsMetal = {
+  sourceName: sources.concertsMetal,
   async getLastRecords(): Promise<TRecord[]> {
     const response = await fetcher.get("https://es.concerts-metal.com", {
       path: "/rss/ES_Barcelona.xml",
@@ -99,20 +106,11 @@ const concertsMetal = {
 };
 
 interface Integration {
+  sourceName: SourceName;
   getLastRecords: () => Promise<TRecord[]>;
 }
 
-const integrations: Record<string, Integration> = {
+export const integrations: Record<string, Integration> = {
   angryMetalGuy,
   concertsMetal,
-};
-
-export const getLastRecords = async (): Promise<TRecord[]> => {
-  const promises = Object.values(integrations).map((integration) =>
-    integration.getLastRecords(),
-  );
-
-  const results = await Promise.all(promises);
-
-  return results.flat();
 };

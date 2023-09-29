@@ -42,11 +42,13 @@ export class FakeWordPressPostV2 {
 
 export class FakeWordPressPostsV2 {
   private readonly posts: FakeWordPressPostV2[];
+  readonly length: number;
 
   constructor(props: FakeWordPressPostV2Props) {
     this.posts = faker.helpers.multiple(() => new FakeWordPressPostV2(props), {
       count: { min: 1, max: 25 },
     });
+    this.length = this.posts.length;
   }
 
   // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
@@ -95,6 +97,7 @@ export class FakeConcertsMetalList {
     () => new FakeConcertsMetalItem(),
     { count: { min: 1, max: 25 } },
   );
+  readonly length = this.items.length;
 
   // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
   toJson() {
