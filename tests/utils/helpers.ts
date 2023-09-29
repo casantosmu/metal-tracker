@@ -44,9 +44,9 @@ export class FakeWordPressPostsV2 {
   private readonly posts: FakeWordPressPostV2[];
   readonly length: number;
 
-  constructor(props: FakeWordPressPostV2Props) {
+  constructor(props: FakeWordPressPostV2Props, count?: number) {
     this.posts = faker.helpers.multiple(() => new FakeWordPressPostV2(props), {
-      count: { min: 1, max: 25 },
+      count: count ?? { min: 1, max: 25 },
     });
     this.length = this.posts.length;
   }
@@ -93,11 +93,15 @@ class FakeConcertsMetalItem {
 }
 
 export class FakeConcertsMetalList {
-  private readonly items = faker.helpers.multiple(
-    () => new FakeConcertsMetalItem(),
-    { count: { min: 1, max: 25 } },
-  );
-  readonly length = this.items.length;
+  private readonly items: FakeConcertsMetalItem[];
+  readonly length: number;
+
+  constructor(count?: number) {
+    this.items = faker.helpers.multiple(() => new FakeConcertsMetalItem(), {
+      count: count ?? { min: 1, max: 25 },
+    });
+    this.length = this.items.length;
+  }
 
   // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
   toJson() {

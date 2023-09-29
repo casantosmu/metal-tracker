@@ -18,24 +18,14 @@ afterEach(() => {
 describe("runMetalTracker", () => {
   describe("when endpoints return a 200 status code", () => {
     it("should save the records returned by the endpoints and send them to Amazon SNS using the provided topic ARN", async () => {
-      // Add previously existing records in the database, which will be returned by the endpoint but should be ignored
-      const fakePreviousAngryMetalGuy = new FakeWordPressPostsV2({
-        sourceName: "Angry Metal Guy",
-        type: "review",
-      });
-      insertRecords(fakePreviousAngryMetalGuy.toRecords());
-
-      const fakeNewAngryMetalGuy = new FakeWordPressPostsV2({
+      const fakeAngryMetalGuy = new FakeWordPressPostsV2({
         sourceName: "Angry Metal Guy",
         type: "review",
       });
       nock("https://angrymetalguy.com")
         .get("/wp-json/wp/v2/posts")
         .query(true)
-        .reply(200, [
-          ...fakePreviousAngryMetalGuy.toJson(),
-          ...fakeNewAngryMetalGuy.toJson(),
-        ]);
+        .reply(200, fakeAngryMetalGuy.toJson());
 
       const fakeConcertsMetal = new FakeConcertsMetalList();
       nock("https://es.concerts-metal.com")
@@ -43,7 +33,7 @@ describe("runMetalTracker", () => {
         .reply(200, fakeConcertsMetal.toXml());
 
       const expectedSaved = [
-        ...fakeNewAngryMetalGuy.toRecords(),
+        ...fakeAngryMetalGuy.toRecords(),
         ...fakeConcertsMetal.toRecords(),
       ];
 
@@ -93,6 +83,38 @@ describe("runMetalTracker", () => {
 
       const callsToAwsSns = snsMock.commandCalls(PublishCommand);
       expect(callsToAwsSns).toHaveLength(fakeOk.length);
+    });
+  });
+
+  describe("when one endpoint returns new records and previously added records", () => {
+    it("should only send the new records to Amazon SNS", async () => {
+      const fakePreviousAngryMetalGuy = new FakeWordPressPostsV2({
+        sourceName: "Angry Metal Guy",
+        type: "review",
+      });
+      insertRecords(fakePreviousAngryMetalGuy.toRecords());
+
+      const fakeNewAngryMetalGuy = new FakeWordPressPostsV2({
+        sourceName: "Angry Metal Guy",
+        type: "review",
+      });
+
+      nock("https://angrymetalguy.com")
+        .get("/wp-json/wp/v2/posts")
+        .query(true)
+        .reply(200, [
+          ...fakePreviousAngryMetalGuy.toJson(),
+          ...fakeNewAngryMetalGuy.toJson(),
+        ]);
+
+      nock("https://es.concerts-metal.com")
+        .get("/rss/ES_Barcelona.xml")
+        .reply(200, new FakeConcertsMetalList(0).toXml());
+
+      await runMetalTracker("");
+
+      const callsToAwsSns = snsMock.commandCalls(PublishCommand);
+      expect(callsToAwsSns).toHaveLength(fakeNewAngryMetalGuy.length);
     });
   });
 });

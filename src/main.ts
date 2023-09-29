@@ -34,10 +34,14 @@ export const runMetalTracker = async (topicArn: string): Promise<void> => {
       console.log(
         `Successfully sent an email with new records from ${
           integration.sourceName
-        }:\n${inspect(newRecords)}`,
+        }:\n${inspect(newRecords, { depth: null })}`,
       );
     } catch (error) {
-      console.error(error);
+      console.error(
+        `Error from '${integration.sourceName}':\n${inspect(error, {
+          depth: null,
+        })}`,
+      );
     }
   });
 

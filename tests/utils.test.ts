@@ -32,6 +32,7 @@ describe("subtractDays", () => {
     });
   });
 });
+
 describe("argvParser", () => {
   describe("when receives a list with --name=carlos and --secret=WfUYD$i9(=", () => {
     it("should return an object with name: carlos and secret: WfUYD$i9(=", () => {
