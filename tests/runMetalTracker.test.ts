@@ -117,4 +117,30 @@ describe("runMetalTracker", () => {
       expect(callsToAwsSns).toHaveLength(fakeNewAngryMetalGuy.length);
     });
   });
+
+  describe("When the endpoint returns records but first record sent to Amazon AWS fails", () => {
+    it("should successfully save all records except the failed one", async () => {
+      snsMock.rejectsOnce();
+
+      const fakeAngryMetalGuy = new FakeWordPressPostsV2({
+        sourceName: "Angry Metal Guy",
+        type: "review",
+      });
+      nock("https://angrymetalguy.com")
+        .get("/wp-json/wp/v2/posts")
+        .query(true)
+        .reply(200, fakeAngryMetalGuy.toJson());
+
+      nock("https://es.concerts-metal.com")
+        .get("/rss/ES_Barcelona.xml")
+        .reply(200, new FakeConcertsMetalList().toXml());
+
+      await runMetalTracker("");
+
+      const savedRecords = getRecordsByIds(
+        fakeAngryMetalGuy.toRecords().map((record) => record.id),
+      );
+      expect(savedRecords).toHaveLength(fakeAngryMetalGuy.length - 1);
+    });
+  });
 });
