@@ -86,7 +86,7 @@ interface RecordTable {
   description: string;
 }
 
-export function insertRecord(record: TRecord): undefined {
+export function insertRecord(record: TRecord): void {
   const sql = `
     INSERT INTO records (type, source, record_id, title, link, publication_date, description)
     VALUES (@type, @source, @record_id, @title, @link, @publication_date, @description);
@@ -103,7 +103,7 @@ export function insertRecord(record: TRecord): undefined {
   });
 }
 
-export function insertRecords(records: TRecord[]): undefined {
+export function insertRecords(records: TRecord[]): void {
   const sql = `
     INSERT INTO records (type, source, record_id, title, link, publication_date, description)
     VALUES (@type, @source, @record_id, @title, @link, @publication_date, @description);
