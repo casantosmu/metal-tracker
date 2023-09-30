@@ -60,13 +60,13 @@ export const runMigrations = (): void => {
   console.log(`Found ${migrationsToRun.length} new migrations to run.`);
 
   const run = db.transaction(() => {
+    const insert = db.prepare(
+      "INSERT INTO migrations (id, source) VALUES (?, ?);",
+    );
+
     migrationsToRun.forEach((migration) => {
       db.exec(migration.source);
-      db.prepare("INSERT INTO migrations (id, source) VALUES (?, ?);").run([
-        migration.id,
-        migration.source,
-      ]);
-
+      insert.run([migration.id, migration.source]);
       console.log(`Executed migration ${migration.id}`);
     });
   });
@@ -86,34 +86,34 @@ interface RecordTable {
   description: string;
 }
 
-export function insertRecords(
-  records: TRecord[],
-  options: { returning: true; ignoreOnConflict?: boolean },
-): TRecord[];
-export function insertRecords(
-  records: TRecord[],
-  options?: { returning?: false; ignoreOnConflict?: boolean },
-): undefined;
-export function insertRecords(
-  records: TRecord[],
-  options?: { returning?: boolean; ignoreOnConflict?: boolean },
-): TRecord[] | undefined {
-  const { ignoreOnConflict = false, returning = false } = options ?? {};
+export function insertRecord(record: TRecord): void {
+  const sql = `
+    INSERT INTO records (type, source, record_id, title, link, publication_date, description)
+    VALUES (@type, @source, @record_id, @title, @link, @publication_date, @description);
+  `;
+
+  db.prepare(sql).run({
+    type: record.type,
+    source: record.sourceName,
+    record_id: record.id,
+    title: record.title,
+    link: record.link,
+    publication_date: record.publicationDate.toISOString(),
+    description: record.description,
+  });
+}
+
+export function insertRecords(records: TRecord[]): void {
+  const sql = `
+    INSERT INTO records (type, source, record_id, title, link, publication_date, description)
+    VALUES (@type, @source, @record_id, @title, @link, @publication_date, @description);
+  `;
+
+  const insert = db.prepare(sql);
 
   const insertMany = db.transaction(() => {
-    const results: TRecord[] = [];
-
-    const sql = `
-      INSERT INTO records (type, source, record_id, title, link, publication_date, description)
-      VALUES (@type, @source, @record_id, @title, @link, @publication_date, @description)
-      ${ignoreOnConflict ? "ON CONFLICT DO NOTHING" : ""}
-      ${returning ? "RETURNING *" : ""};
-    `;
-
-    const insert = db.prepare(sql);
-
     records.forEach((record) => {
-      const params = {
+      insert.run({
         type: record.type,
         source: record.sourceName,
         record_id: record.id,
@@ -121,35 +121,17 @@ export function insertRecords(
         link: record.link,
         publication_date: record.publicationDate.toISOString(),
         description: record.description,
-      };
-
-      if (!returning) {
-        insert.run(params);
-        return;
-      }
-
-      const result = insert.get(params) as RecordTable | undefined;
-
-      if (!result) {
-        return;
-      }
-
-      results.push({
-        type: result.type,
-        sourceName: result.source,
-        id: result.record_id,
-        title: result.title,
-        publicationDate: new Date(result.publication_date),
-        link: result.link,
-        description: result.description,
       });
     });
-
-    return returning ? results : undefined;
   });
 
-  return insertMany();
+  insertMany();
 }
+
+export const recordExistsById = (id: string): boolean => {
+  const sql = "SELECT EXISTS(SELECT 1 FROM records WHERE record_id = ?);";
+  return !!db.prepare(sql).pluck().get(id);
+};
 
 export const getRecordsByIds = (ids: string[]): TRecord[] => {
   const sql = `
@@ -166,6 +148,7 @@ export const getRecordsByIds = (ids: string[]): TRecord[] => {
   `;
 
   const result = db.prepare(sql).all(ids) as RecordTable[];
+
   return result.map((result) => ({
     type: result.type,
     sourceName: result.source,
