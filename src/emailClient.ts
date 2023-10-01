@@ -8,7 +8,7 @@ import {
 
 const snsSubjectMaxLong = 100;
 
-const snsClient = new SNSClient({});
+const snsClient = new SNSClient();
 
 const createSubjectFromRecord = (record: TRecord): string => {
   const initialSubject = `Metal Tracker - New ${record.type}: ${record.title}`;

@@ -3,7 +3,9 @@ import { stripHtml } from "string-strip-html";
 import { Parser as XmlParser, Builder as XmlBuilder } from "xml2js";
 import { pino } from "pino";
 
-export const logger = pino();
+export const logger = pino({
+  level: process.env["LOG_LEVEL"] ?? "info",
+});
 
 interface UrlOptions {
   path?: string;
@@ -50,6 +52,8 @@ async function getFn(
       `Error occurred while making a GET request to '${endpoint}':\n- Response Status: ${response.status} (${response.statusText})\n- Server Error Message: ${text}`,
     );
   }
+
+  logger.debug(`GET ${response.status} '${endpoint}':\n${text}`);
 
   const result =
     options?.responseType === "text"
