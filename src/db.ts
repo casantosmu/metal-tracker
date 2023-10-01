@@ -3,6 +3,7 @@ import fs from "fs";
 import BetterSqlite3 from "better-sqlite3";
 import { z } from "zod";
 import type { TRecord, RecordType, SourceName } from "./entities.js";
+import { logger } from "./utils.js";
 
 const filename = path.join(process.cwd(), "sqlite", "data.db");
 const db = new BetterSqlite3(filename);
@@ -39,7 +40,7 @@ const parseMigrations = (migrationsDir: string): Migration[] => {
 
 export const runMigrations = (): void => {
   const migrationsDir = new URL("migrations", import.meta.url).pathname;
-  console.log(`Checking for new migrations in directory: ${migrationsDir}`);
+  logger.info(`Checking for new migrations in directory: ${migrationsDir}`);
   const migrations = parseMigrations(migrationsDir);
 
   db.exec(
@@ -53,11 +54,11 @@ export const runMigrations = (): void => {
   const migrationsToRun = migrations.slice(firstMigrationToRun);
 
   if (!migrationsToRun.length) {
-    console.log("No new migrations to run.");
+    logger.info("No new migrations to run.");
     return;
   }
 
-  console.log(`Found ${migrationsToRun.length} new migrations to run.`);
+  logger.info(`Found ${migrationsToRun.length} new migrations to run.`);
 
   const run = db.transaction(() => {
     const insert = db.prepare(
@@ -67,13 +68,13 @@ export const runMigrations = (): void => {
     migrationsToRun.forEach((migration) => {
       db.exec(migration.source);
       insert.run([migration.id, migration.source]);
-      console.log(`Executed migration ${migration.id}`);
+      logger.info(`Executed migration ${migration.id}`);
     });
   });
 
   run();
 
-  console.log("All new migrations have been successfully executed.");
+  logger.info("All new migrations have been successfully executed.");
 };
 
 interface RecordTable {

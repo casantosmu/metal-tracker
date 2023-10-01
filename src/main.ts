@@ -1,8 +1,8 @@
-import { inspect } from "util";
 import { integrations } from "./integrations.js";
 import { insertRecord, recordExistsById } from "./db.js";
 import { sendRecordEmail } from "./emailClient.js";
 import type { TRecord } from "./entities.js";
+import { logger } from "./utils.js";
 
 const saveAndSendNewRecord = async (
   record: TRecord,
@@ -18,27 +18,23 @@ const saveAndSendNewRecord = async (
 
   insertRecord(record);
 
-  console.log(
-    `Successfully sent an email with new record:\n${inspect(record, {
-      depth: null,
-    })}`,
-  );
+  logger.info(record, "Successfully sent an email with new record");
 };
 
 export const runMetalTracker = async (topicArn: string): Promise<void> => {
-  console.log("Initiating metal tracking process...");
+  logger.info("Initiating metal tracking process...");
 
   const promises = Object.values(integrations).map(async (integration) => {
     let lastRecords: TRecord[];
     try {
       lastRecords = await integration.getLastRecords();
     } catch (error) {
-      console.error(error);
+      logger.error(error);
       return;
     }
 
     if (!lastRecords.length) {
-      console.log(
+      logger.info(
         `No new records were found from '${integration.sourceName}'.`,
       );
       return;
@@ -49,7 +45,7 @@ export const runMetalTracker = async (topicArn: string): Promise<void> => {
         try {
           await saveAndSendNewRecord(record, topicArn);
         } catch (error) {
-          console.error(error);
+          logger.error(error);
         }
       }),
     );
@@ -57,5 +53,5 @@ export const runMetalTracker = async (topicArn: string): Promise<void> => {
 
   await Promise.all(promises);
 
-  console.log("Metal tracking process completed.");
+  logger.info("Metal tracking process completed.");
 };
