@@ -46,11 +46,9 @@ async function getFn(
   const text = await response.text();
 
   if (!response.ok) {
-    throw new Error(`
-      Error occurred while making a GET request to '${endpoint}':
-      - Response Status: ${response.status} (${response.statusText})
-      - Server Error Message: ${text}
-    `);
+    throw new Error(
+      `Error occurred while making a GET request to '${endpoint}':\n- Response Status: ${response.status} (${response.statusText})\n- Server Error Message: ${text}`,
+    );
   }
 
   const result =
