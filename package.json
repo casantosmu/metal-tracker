@@ -15,7 +15,7 @@
     "prepare": "husky install"
   },
   "dependencies": {
-    "@aws-sdk/client-sns": "^3.418.0",
+    "@aws-sdk/client-sns": "^3.421.0",
     "better-sqlite3": "^8.6.0",
     "node-fetch": "^3.3.2",
     "pino": "^8.15.1",
