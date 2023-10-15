@@ -87,7 +87,7 @@ interface RecordTable {
   description: string;
 }
 
-export function insertRecord(record: TRecord): void {
+export const insertRecord = (record: TRecord): void => {
   const sql = `
     INSERT INTO records (type, source, record_id, title, link, publication_date, description)
     VALUES (@type, @source, @record_id, @title, @link, @publication_date, @description);
@@ -102,9 +102,9 @@ export function insertRecord(record: TRecord): void {
     publication_date: record.publicationDate.toISOString(),
     description: record.description,
   });
-}
+};
 
-export function insertRecords(records: TRecord[]): void {
+export const insertRecords = (records: TRecord[]): void => {
   const sql = `
     INSERT INTO records (type, source, record_id, title, link, publication_date, description)
     VALUES (@type, @source, @record_id, @title, @link, @publication_date, @description);
@@ -127,7 +127,7 @@ export function insertRecords(records: TRecord[]): void {
   });
 
   insertMany();
-}
+};
 
 export const recordExistsById = (id: string): boolean => {
   const sql = "SELECT EXISTS(SELECT 1 FROM records WHERE record_id = ?);";

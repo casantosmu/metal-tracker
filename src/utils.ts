@@ -53,7 +53,7 @@ async function getFn(
     );
   }
 
-  logger.debug(`GET ${response.status} '${endpoint}':\n${text}`);
+  logger.debug(`GET ${response.status} '${endpoint}'`);
 
   const result =
     options?.responseType === "text"
