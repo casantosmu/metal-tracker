@@ -3,7 +3,7 @@ import nock from "nock";
 import { PublishCommand, SNSClient } from "@aws-sdk/client-sns";
 import { mockClient } from "aws-sdk-client-mock";
 import { getRecordsByIds, insertRecords } from "../src/db.js";
-import { runMetalTracker } from "../src/main.js";
+import { app } from "../src/app.js";
 import {
   FakeConcertsMetalList,
   FakeWordPressPostsV2,
@@ -15,7 +15,7 @@ afterEach(() => {
   snsMock.reset();
 });
 
-describe("runMetalTracker", () => {
+describe("app", () => {
   describe("when endpoints return a 200 status code", () => {
     it("should save the records returned by the endpoints and send them to Amazon SNS using the provided topic ARN", async () => {
       const fakeAngryMetalGuy = new FakeWordPressPostsV2({
@@ -39,7 +39,7 @@ describe("runMetalTracker", () => {
 
       const topicArn = "topic-arn";
 
-      await runMetalTracker(topicArn);
+      await app(topicArn);
 
       const savedRecords = getRecordsByIds(
         expectedSaved.map((record) => record.id),
@@ -69,7 +69,7 @@ describe("runMetalTracker", () => {
         .get("/rss/ES_Barcelona.xml")
         .reply(200, fakeOk.toXml());
 
-      await runMetalTracker("");
+      await app("");
 
       const okRecords = getRecordsByIds(
         fakeOk.toRecords().map((record) => record.id),
@@ -111,7 +111,7 @@ describe("runMetalTracker", () => {
         .get("/rss/ES_Barcelona.xml")
         .reply(200, new FakeConcertsMetalList(0).toXml());
 
-      await runMetalTracker("");
+      await app("");
 
       const callsToAwsSns = snsMock.commandCalls(PublishCommand);
       expect(callsToAwsSns).toHaveLength(fakeNewAngryMetalGuy.length);
@@ -135,7 +135,7 @@ describe("runMetalTracker", () => {
         .get("/rss/ES_Barcelona.xml")
         .reply(200, new FakeConcertsMetalList().toXml());
 
-      await runMetalTracker("");
+      await app("");
 
       const savedRecords = getRecordsByIds(
         fakeAngryMetalGuy.toRecords().map((record) => record.id),
