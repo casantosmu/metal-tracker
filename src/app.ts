@@ -1,8 +1,8 @@
+import type { Integration } from "./domain.js";
 import { integrations } from "./integrations.js";
 import { insertRecord, recordExistsById } from "./db.js";
 import { sendRecordEmail } from "./emailClient.js";
 import { logger } from "./utils.js";
-import type { Integration } from "./domain.js";
 
 const sendAndSaveLastRecordsFromIntegration = async (
   integration: Integration,
