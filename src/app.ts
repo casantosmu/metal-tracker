@@ -1,8 +1,24 @@
-import type { Integration } from "./domain.js";
+import type { Integration, TRecord } from "./domain.js";
 import { integrations } from "./integrations.js";
 import { insertRecord, recordExistsById } from "./db.js";
-import { sendRecordEmail } from "./emailClient.js";
+import { sendEmail, type EmailProps } from "./emailClient.js";
 import { logger } from "./utils.js";
+
+const recordToEmail = (record: TRecord): EmailProps => {
+  const subject = `Metal Tracker - New ${record.type}: ${record.title}`;
+  const date = record.publicationDate.toLocaleDateString("en-GB", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+  const message = `A new ${record.type} has been published on ${record.sourceName}\n\nTitle: ${record.title}\nDate: ${date}\nDescription: ${record.description}\nLink: ${record.link}`;
+
+  return {
+    subject,
+    message,
+  };
+};
 
 const sendAndSaveLastRecordsFromIntegration = async (
   integration: Integration,
@@ -21,7 +37,7 @@ const sendAndSaveLastRecordsFromIntegration = async (
         return;
       }
 
-      await sendRecordEmail(record);
+      await sendEmail(recordToEmail(record));
       insertRecord(record);
 
       logger.info(record, "Successfully sent an email with new record");
