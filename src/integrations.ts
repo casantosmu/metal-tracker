@@ -2,10 +2,10 @@ import { z } from "zod";
 import { fetcher, removeHtml, subtractDays, xmlParser } from "./utils.js";
 import {
   type TRecord,
+  type Integration,
   sources,
   recordTypes,
-  type SourceName,
-} from "./entities.js";
+} from "./domain.js";
 
 const wordPressUtils = {
   maxPerPage: 100,
@@ -104,11 +104,6 @@ const concertsMetal = {
     }),
   }),
 };
-
-interface Integration {
-  sourceName: SourceName;
-  getLastRecords: () => Promise<TRecord[]>;
-}
 
 export const integrations: Record<string, Integration> = {
   angryMetalGuy,

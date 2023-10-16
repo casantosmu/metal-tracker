@@ -23,3 +23,8 @@ export interface TRecord {
   publicationDate: Date;
   description: string;
 }
+
+export interface Integration {
+  sourceName: SourceName;
+  getLastRecords: () => Promise<TRecord[]>;
+}

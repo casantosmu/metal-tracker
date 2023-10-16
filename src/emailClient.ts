@@ -1,5 +1,5 @@
 import { SNSClient, PublishCommand } from "@aws-sdk/client-sns";
-import type { TRecord } from "./entities.js";
+import type { TRecord } from "./domain.js";
 import {
   isAsciiCharacter,
   isControlCharacter,

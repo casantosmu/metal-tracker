@@ -2,7 +2,7 @@ import path from "path";
 import fs from "fs";
 import BetterSqlite3 from "better-sqlite3";
 import { z } from "zod";
-import type { TRecord, RecordType, SourceName } from "./entities.js";
+import type { TRecord, RecordType, SourceName } from "./domain.js";
 import { logger } from "./utils.js";
 
 const filename = path.join(process.cwd(), "sqlite", "data.db");

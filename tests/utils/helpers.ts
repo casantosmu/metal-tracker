@@ -1,5 +1,5 @@
 import { faker } from "@faker-js/faker";
-import type { RecordType, SourceName, TRecord } from "../../src/entities.js";
+import type { RecordType, SourceName, TRecord } from "../../src/domain.js";
 import { toXml } from "../../src/utils.js";
 
 interface FakeWordPressPostV2Props {
