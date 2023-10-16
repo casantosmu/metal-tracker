@@ -50,5 +50,10 @@ jobs:
       - name: Install Dependencies
         run: npm ci
 
+      - name: Create .env file
+        run: |
+          echo "SNS_TOPIC_ARN=arn:aws:sns:us-east-1:XXXXXXXX:aws-sns-topic" >> .env
+          echo "LOG_LEVEL=silent" >> .env
+
       - name: Run tests
         run: npm run test:coverage

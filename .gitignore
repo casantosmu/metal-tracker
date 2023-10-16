@@ -4,5 +4,9 @@ dist/
 # needed for sqlite
 sqlite/data*
 
+# very important
+/**/.env*.local
+/**/.env
+
 # test coverage
 coverage/

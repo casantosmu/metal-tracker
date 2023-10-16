@@ -33,4 +33,4 @@ COPY --from=builder /app/dist ./
 
 USER node
 
-CMD ["sh", "-c", "node index.js --topic-arn=${TOPIC_ARN}"]
+CMD ["node", "index.js"]

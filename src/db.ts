@@ -2,7 +2,7 @@ import path from "path";
 import fs from "fs";
 import BetterSqlite3 from "better-sqlite3";
 import { z } from "zod";
-import type { TRecord, RecordType, SourceName } from "./entities.js";
+import type { TRecord, RecordType, SourceName } from "./domain.js";
 import { logger } from "./utils.js";
 
 const filename = path.join(process.cwd(), "sqlite", "data.db");
@@ -38,7 +38,7 @@ const parseMigrations = (migrationsDir: string): Migration[] => {
   });
 };
 
-export const runMigrations = (): void => {
+export const loadMigrations = (): void => {
   const migrationsDir = new URL("migrations", import.meta.url).pathname;
   logger.info(`Checking for new migrations in directory: ${migrationsDir}`);
   const migrations = parseMigrations(migrationsDir);
