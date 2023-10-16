@@ -1,10 +1,16 @@
 import type { Integration, TRecord } from "./domain.js";
 import { integrations } from "./integrations.js";
-import { insertRecord, recordExistsById } from "./db.js";
+import {
+  transaction,
+  insertRecord,
+  insertRecordSourceIfNotExists,
+  insertRecordTypeIfNotExists,
+  recordExistsById,
+} from "./db.js";
 import { sendEmail, type EmailProps } from "./emailClient.js";
 import { logger } from "./utils.js";
 
-const recordToEmail = (record: TRecord): EmailProps => {
+const recordToEmailProps = (record: TRecord): EmailProps => {
   const subject = `Metal Tracker - New ${record.type}: ${record.title}`;
   const date = record.publicationDate.toLocaleDateString("en-GB", {
     weekday: "long",
@@ -20,13 +26,13 @@ const recordToEmail = (record: TRecord): EmailProps => {
   };
 };
 
-const sendAndSaveLastRecordsFromIntegration = async (
+const sendAndSaveNewRecordsFromIntegration = async (
   integration: Integration,
 ): Promise<void> => {
   const lastRecords = await integration.getLastRecords();
 
   if (!lastRecords.length) {
-    logger.info(`No new records were found from '${integration.sourceName}'.`);
+    logger.info(`No records were found from '${integration.sourceName}'.`);
     return;
   }
 
@@ -37,8 +43,15 @@ const sendAndSaveLastRecordsFromIntegration = async (
         return;
       }
 
-      await sendEmail(recordToEmail(record));
-      insertRecord(record);
+      // sendEmail is located outside the transaction block because SQLite3
+      // serializes all transactions. It doesn't support async functions.
+      await sendEmail(recordToEmailProps(record));
+
+      transaction(() => {
+        insertRecordTypeIfNotExists(record.type);
+        insertRecordSourceIfNotExists(record.sourceName);
+        insertRecord(record);
+      });
 
       logger.info(record, "Successfully sent an email with new record");
     }),
@@ -55,7 +68,7 @@ export const loadApp = async (): Promise<void> => {
   logger.info("Initiating metal tracking process...");
 
   const results = await Promise.allSettled(
-    Object.values(integrations).map(sendAndSaveLastRecordsFromIntegration),
+    Object.values(integrations).map(sendAndSaveNewRecordsFromIntegration),
   );
 
   results.forEach((result) => {

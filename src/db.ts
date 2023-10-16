@@ -1,12 +1,16 @@
-import path from "path";
-import fs from "fs";
+import path from "node:path";
+import fs from "node:fs";
 import BetterSqlite3 from "better-sqlite3";
 import { z } from "zod";
 import type { TRecord, RecordType, SourceName } from "./domain.js";
 import { logger } from "./utils.js";
 
 const filename = path.join(process.cwd(), "sqlite", "data.db");
-const db = new BetterSqlite3(filename);
+const db = new BetterSqlite3(filename, {
+  verbose(message): void {
+    logger.debug(message);
+  },
+});
 
 // It's recommended to turn on WAL mode to greatly increase overall performance.
 // https://github.com/WiseLibs/better-sqlite3/blob/master/docs/performance.md
@@ -75,6 +79,10 @@ export const loadMigrations = (): void => {
   run();
 
   logger.info("All new migrations have been successfully executed.");
+};
+
+export const transaction = (cb: () => void): void => {
+  db.transaction(cb)();
 };
 
 interface RecordTable {
@@ -159,4 +167,24 @@ export const getRecordsByIds = (ids: string[]): TRecord[] => {
     link: result.link,
     description: result.description,
   }));
+};
+
+export const insertRecordTypeIfNotExists = (type: string): void => {
+  const sql = `
+    INSERT INTO record_types (type)
+    VALUES (?)
+    ON CONFLICT DO NOTHING;
+  `;
+
+  db.prepare(sql).run(type);
+};
+
+export const insertRecordSourceIfNotExists = (source: string): void => {
+  const sql = `
+    INSERT INTO sources (source)
+    VALUES (?)
+    ON CONFLICT DO NOTHING;
+  `;
+
+  db.prepare(sql).run(source);
 };
