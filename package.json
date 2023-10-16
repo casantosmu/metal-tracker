@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node .",
     "build": "shx rm -fr dist && tsc --project tsconfig.build.json && shx cp -r src/migrations dist",
-    "dev": "tsx watch --inspect src/index.ts",
+    "dev": "tsx -r dotenv/config watch --inspect src/index.ts",
     "test": "cross-env LOG_LEVEL=silent vitest",
     "test:coverage": "cross-env LOG_LEVEL=silent vitest run --coverage",
     "lint": "eslint .",
@@ -33,6 +33,7 @@
     "@vitest/coverage-v8": "^0.34.6",
     "aws-sdk-client-mock": "^3.0.0",
     "cross-env": "^7.0.3",
+    "dotenv": "^16.3.1",
     "eslint": "^8.51.0",
     "eslint-import-resolver-typescript": "^3.6.1",
     "eslint-plugin-eslint-comments": "^3.2.0",

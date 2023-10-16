@@ -30,7 +30,7 @@ To execute the Metal Tracker script, follow these steps:
      -e AWS_ACCESS_KEY_ID=YOUR_ACCESS_KEY_ID \
      -e AWS_SECRET_ACCESS_KEY=YOUR_SECRET_ACCESS_KEY \
      -e AWS_REGION=us-east-1 \
-     -e TOPIC_ARN=YOUR_SNS_TOPIC_ARN \
+     -e SNS_TOPIC_ARN=YOUR_SNS_TOPIC_ARN \
      ghcr.io/casantosmu/metal-tracker:main
    ```
 

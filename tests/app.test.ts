@@ -1,9 +1,8 @@
-import { describe, it, expect, afterEach } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import nock from "nock";
 import { PublishCommand, SNSClient } from "@aws-sdk/client-sns";
 import { mockClient } from "aws-sdk-client-mock";
 import { getRecordsByIds, insertRecords } from "../src/db.js";
-import { app } from "../src/app.js";
 import {
   FakeConcertsMetalList,
   FakeWordPressPostsV2,
@@ -11,13 +10,19 @@ import {
 
 const snsMock = mockClient(SNSClient);
 
-afterEach(() => {
+const loadApp = async (): Promise<void> => {
+  await (await import("../src/app.js")).app();
+};
+
+beforeEach(() => {
   snsMock.reset();
+  vi.resetModules();
+  vi.unstubAllEnvs();
 });
 
 describe("app", () => {
   describe("when endpoints return a 200 status code", () => {
-    it("should save the records returned by the endpoints and send them to Amazon SNS using the provided topic ARN", async () => {
+    it("should save the records returned by the endpoints and send them to Amazon SNS using the SNS_TOPIC_ARN env variable", async () => {
       const fakeAngryMetalGuy = new FakeWordPressPostsV2({
         sourceName: "Angry Metal Guy",
         type: "review",
@@ -37,9 +42,10 @@ describe("app", () => {
         ...fakeConcertsMetal.toRecords(),
       ];
 
-      const topicArn = "topic-arn";
+      const SNS_TOPIC_ARN = "topic-arn";
+      vi.stubEnv("SNS_TOPIC_ARN", SNS_TOPIC_ARN);
 
-      await app(topicArn);
+      await loadApp();
 
       const savedRecords = getRecordsByIds(
         expectedSaved.map((record) => record.id),
@@ -47,7 +53,7 @@ describe("app", () => {
       expect(savedRecords).toStrictEqual(expectedSaved);
 
       const callsToAwsSns = snsMock.commandCalls(PublishCommand, {
-        TopicArn: topicArn,
+        TopicArn: SNS_TOPIC_ARN,
       });
       expect(callsToAwsSns).toHaveLength(expectedSaved.length);
     });
@@ -55,31 +61,22 @@ describe("app", () => {
 
   describe("when one endpoint fails", () => {
     it("should save the remaining records returned by the endpoints with a 200 status code and send them to Amazon SNS", async () => {
-      const fakeError = new FakeWordPressPostsV2({
-        sourceName: "Angry Metal Guy",
-        type: "review",
-      });
       nock("https://angrymetalguy.com")
         .get("/wp-json/wp/v2/posts")
         .query(true)
-        .reply(500, fakeError.toJson());
+        .reply(500, { error: "msg" });
 
       const fakeOk = new FakeConcertsMetalList();
       nock("https://es.concerts-metal.com")
         .get("/rss/ES_Barcelona.xml")
         .reply(200, fakeOk.toXml());
 
-      await app("");
+      await loadApp();
 
       const okRecords = getRecordsByIds(
         fakeOk.toRecords().map((record) => record.id),
       );
       expect(okRecords).toHaveLength(fakeOk.length);
-
-      const errorRecords = getRecordsByIds(
-        fakeError.toRecords().map((record) => record.id),
-      );
-      expect(errorRecords).toHaveLength(0);
 
       const callsToAwsSns = snsMock.commandCalls(PublishCommand);
       expect(callsToAwsSns).toHaveLength(fakeOk.length);
@@ -111,7 +108,7 @@ describe("app", () => {
         .get("/rss/ES_Barcelona.xml")
         .reply(200, new FakeConcertsMetalList(0).toXml());
 
-      await app("");
+      await loadApp();
 
       const callsToAwsSns = snsMock.commandCalls(PublishCommand);
       expect(callsToAwsSns).toHaveLength(fakeNewAngryMetalGuy.length);
@@ -135,7 +132,7 @@ describe("app", () => {
         .get("/rss/ES_Barcelona.xml")
         .reply(200, new FakeConcertsMetalList().toXml());
 
-      await app("");
+      await loadApp();
 
       const savedRecords = getRecordsByIds(
         fakeAngryMetalGuy.toRecords().map((record) => record.id),

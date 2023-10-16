@@ -92,19 +92,3 @@ export const truncateString = (
 
 export const subtractDays = (from: Date, days: number): Date =>
   new Date(from.getTime() - days * 24 * 60 * 60 * 1000);
-
-export const argvParser = (args: string[]): Record<string, string> => {
-  const separator = "=";
-  const flagPrefix = "--";
-
-  const result: Record<string, string> = {};
-
-  for (const arg of args) {
-    const key = arg.slice(flagPrefix.length, arg.indexOf(separator));
-    const value = arg.slice(flagPrefix.length + key.length + separator.length);
-
-    result[key] = value;
-  }
-
-  return result;
-};

@@ -6,7 +6,12 @@ import {
   truncateString,
 } from "./utils.js";
 
-const snsSubjectMaxLong = 100;
+const SNS_SUBJECT_MAX_LENGTH = 100;
+const SNS_TOPIC_ARN = process.env["SNS_TOPIC_ARN"];
+
+if (!SNS_TOPIC_ARN) {
+  throw new Error("You must specify SNS_TOPIC_ARN environment variable");
+}
 
 const snsClient = new SNSClient();
 
@@ -18,13 +23,10 @@ const createSubjectFromRecord = (record: TRecord): string => {
     }
     return result;
   });
-  return truncateString(cleanSubject, snsSubjectMaxLong);
+  return truncateString(cleanSubject, SNS_SUBJECT_MAX_LENGTH);
 };
 
-export const sendRecordEmail = async (
-  record: TRecord,
-  topicArn: string,
-): Promise<void> => {
+export const sendRecordEmail = async (record: TRecord): Promise<void> => {
   const subject = createSubjectFromRecord(record);
   const date = record.publicationDate.toLocaleDateString("es-ES", {
     weekday: "long",
@@ -38,7 +40,7 @@ export const sendRecordEmail = async (
     new PublishCommand({
       Subject: subject,
       Message: message,
-      TopicArn: topicArn,
+      TopicArn: SNS_TOPIC_ARN,
     }),
   );
 };

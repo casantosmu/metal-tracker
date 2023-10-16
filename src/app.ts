@@ -6,7 +6,6 @@ import type { Integration } from "./domain.js";
 
 const sendAndSaveLastRecordsFromIntegration = async (
   integration: Integration,
-  topicArn: string,
 ): Promise<void> => {
   const lastRecords = await integration.getLastRecords();
 
@@ -22,7 +21,7 @@ const sendAndSaveLastRecordsFromIntegration = async (
         return;
       }
 
-      await sendRecordEmail(record, topicArn);
+      await sendRecordEmail(record);
       insertRecord(record);
 
       logger.info(record, "Successfully sent an email with new record");
@@ -36,13 +35,11 @@ const sendAndSaveLastRecordsFromIntegration = async (
   });
 };
 
-export const app = async (topicArn: string): Promise<void> => {
+export const app = async (): Promise<void> => {
   logger.info("Initiating metal tracking process...");
 
   const results = await Promise.allSettled(
-    Object.values(integrations).map((integration) =>
-      sendAndSaveLastRecordsFromIntegration(integration, topicArn),
-    ),
+    Object.values(integrations).map(sendAndSaveLastRecordsFromIntegration),
   );
 
   results.forEach((result) => {
