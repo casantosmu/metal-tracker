@@ -38,7 +38,7 @@ const parseMigrations = (migrationsDir: string): Migration[] => {
   });
 };
 
-export const runMigrations = (): void => {
+export const loadMigrations = (): void => {
   const migrationsDir = new URL("migrations", import.meta.url).pathname;
   logger.info(`Checking for new migrations in directory: ${migrationsDir}`);
   const migrations = parseMigrations(migrationsDir);

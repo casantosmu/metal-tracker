@@ -1,5 +1,5 @@
-import { runMigrations } from "./db.js";
-import { app } from "./app.js";
+import { loadMigrations } from "./db.js";
+import { loadApp } from "./app.js";
 
-runMigrations();
-await app();
+loadMigrations();
+await loadApp();

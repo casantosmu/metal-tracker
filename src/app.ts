@@ -35,7 +35,7 @@ const sendAndSaveLastRecordsFromIntegration = async (
   });
 };
 
-export const app = async (): Promise<void> => {
+export const loadApp = async (): Promise<void> => {
   logger.info("Initiating metal tracking process...");
 
   const results = await Promise.allSettled(

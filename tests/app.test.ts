@@ -11,7 +11,7 @@ import {
 const snsMock = mockClient(SNSClient);
 
 const loadApp = async (): Promise<void> => {
-  await (await import("../src/app.js")).app();
+  await (await import("../src/app.js")).loadApp();
 };
 
 beforeEach(() => {
@@ -20,7 +20,7 @@ beforeEach(() => {
   vi.unstubAllEnvs();
 });
 
-describe("app", () => {
+describe("loadApp", () => {
   describe("when endpoints return a 200 status code", () => {
     it("should save the records returned by the endpoints and send them to Amazon SNS using the SNS_TOPIC_ARN env variable", async () => {
       const fakeAngryMetalGuy = new FakeWordPressPostsV2({
