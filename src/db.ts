@@ -51,9 +51,10 @@ export const loadMigrations = (): void => {
     "CREATE TABLE IF NOT EXISTS migrations (id INTEGER NOT NULL PRIMARY KEY, source TEXT NOT NULL);",
   );
 
-  const { count: firstMigrationToRun } = db
-    .prepare("SELECT COUNT(*) AS count FROM migrations;")
-    .get() as { count: number };
+  const firstMigrationToRun = db
+    .prepare("SELECT COUNT(*) FROM migrations;")
+    .pluck()
+    .get() as number;
 
   const migrationsToRun = migrations.slice(firstMigrationToRun);
 
@@ -137,12 +138,20 @@ export const insertRecords = (records: TRecord[]): void => {
   insertMany();
 };
 
-export const recordExistsById = (id: string): boolean => {
-  const sql = "SELECT EXISTS(SELECT 1 FROM records WHERE record_id = ?);";
-  return !!db.prepare(sql).pluck().get(id);
+export const recordExistsByKey = (id: string, source: SourceName): boolean => {
+  const sql = `
+    SELECT EXISTS (
+      SELECT 1 FROM records
+      WHERE record_id = ? AND source = ?
+    );
+  `;
+
+  return !!db.prepare(sql).pluck().get([id, source]);
 };
 
-export const getRecordsByIds = (ids: string[]): TRecord[] => {
+export const getRecordsByKeys = (
+  keys: [id: string, source: SourceName][],
+): TRecord[] => {
   const sql = `
     SELECT
       type,
@@ -153,10 +162,10 @@ export const getRecordsByIds = (ids: string[]): TRecord[] => {
       publication_date,
       description
     FROM records 
-    WHERE record_id IN (${ids.map(() => "?").join(",")});
+    WHERE (record_id, source) IN (${keys.map(() => "(?, ?)").join(",")});
   `;
 
-  const result = db.prepare(sql).all(ids) as RecordTable[];
+  const result = db.prepare(sql).all(keys.flat()) as RecordTable[];
 
   return result.map((result) => ({
     type: result.type,
