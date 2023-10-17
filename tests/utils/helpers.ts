@@ -124,3 +124,9 @@ export class FakeConcertsMetalList {
     return this.items.map((item) => item.toRecord());
   }
 }
+
+export const recordsSortedBy =
+  (sortBy: "publicationDate") =>
+  (a: TRecord, b: TRecord): number => {
+    return a[sortBy].getTime() - b[sortBy].getTime();
+  };

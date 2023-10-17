@@ -5,7 +5,7 @@ import {
   insertRecord,
   insertRecordSourceIfNotExists,
   insertRecordTypeIfNotExists,
-  recordExistsById,
+  recordExistsByKey,
 } from "./db.js";
 import { sendEmail, type EmailProps } from "./emailClient.js";
 import { logger } from "./utils.js";
@@ -38,8 +38,8 @@ const sendAndSaveNewRecordsFromIntegration = async (
 
   const results = await Promise.allSettled(
     lastRecords.map(async (record) => {
-      const isRecordAdded = recordExistsById(record.id);
-      if (isRecordAdded) {
+      const isRecordSaved = recordExistsByKey(record.id, record.sourceName);
+      if (isRecordSaved) {
         return;
       }
 

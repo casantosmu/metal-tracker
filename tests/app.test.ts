@@ -2,10 +2,11 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import nock from "nock";
 import { PublishCommand, SNSClient } from "@aws-sdk/client-sns";
 import { mockClient } from "aws-sdk-client-mock";
-import { getRecordsByIds, insertRecords } from "../src/db.js";
+import { getRecordsByKeys, insertRecords } from "../src/db.js";
 import {
   FakeConcertsMetalList,
   FakeWordPressPostsV2,
+  recordsSortedBy,
 } from "./utils/helpers.js";
 
 const snsMock = mockClient(SNSClient);
@@ -47,10 +48,12 @@ describe("loadApp", () => {
 
       await loadApp();
 
-      const savedRecords = getRecordsByIds(
-        expectedSaved.map((record) => record.id),
+      const savedRecords = getRecordsByKeys(
+        expectedSaved.map(({ id, sourceName }) => [id, sourceName]),
       );
-      expect(savedRecords).toStrictEqual(expectedSaved);
+      expect(
+        savedRecords.sort(recordsSortedBy("publicationDate")),
+      ).toStrictEqual(expectedSaved.sort(recordsSortedBy("publicationDate")));
 
       const callsToAwsSns = snsMock.commandCalls(PublishCommand, {
         TopicArn: SNS_TOPIC_ARN,
@@ -73,8 +76,8 @@ describe("loadApp", () => {
 
       await loadApp();
 
-      const okRecords = getRecordsByIds(
-        fakeOk.toRecords().map((record) => record.id),
+      const okRecords = getRecordsByKeys(
+        fakeOk.toRecords().map(({ id, sourceName }) => [id, sourceName]),
       );
       expect(okRecords).toHaveLength(fakeOk.length);
 
@@ -134,8 +137,10 @@ describe("loadApp", () => {
 
       await loadApp();
 
-      const savedRecords = getRecordsByIds(
-        fakeAngryMetalGuy.toRecords().map((record) => record.id),
+      const savedRecords = getRecordsByKeys(
+        fakeAngryMetalGuy
+          .toRecords()
+          .map(({ id, sourceName }) => [id, sourceName]),
       );
       expect(savedRecords).toHaveLength(fakeAngryMetalGuy.length - 1);
     });
