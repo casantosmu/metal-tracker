@@ -1,14 +1,78 @@
-import type { Integration, TRecord } from "./domain.js";
+import {
+  type Integration,
+  type TRecord,
+  recordTypes,
+  sources,
+} from "./domain.js";
 import { integrations } from "./integrations.js";
 import {
-  transaction,
+  getAllRecordTypes,
+  getAllSources,
   insertRecord,
-  insertRecordSourceIfNotExists,
-  insertRecordTypeIfNotExists,
   recordExistsByKey,
 } from "./db.js";
 import { sendEmail, type EmailProps } from "./emailClient.js";
 import { logger } from "./utils.js";
+
+const buildAppAndDbInfo = (appValues: string[], dbValues: string[]): string => {
+  return `Application values:\n ${appValues.join("\n ")}\nTotal: ${
+    appValues.length
+  }\n------------\nDatabase values:\n ${dbValues.join("\n ")}\nTotal: ${
+    dbValues.length
+  }`;
+};
+
+/**
+ * Ensures values in the application and the database remain synchronized.
+ * Any addition, deletion, or update should be mirrored in both places.
+ */
+const checkAppIntegrity = (): void => {
+  const typesInApp = Object.values(recordTypes);
+  const typesInDb = getAllRecordTypes();
+
+  if (typesInApp.length !== typesInDb.length) {
+    throw new Error(
+      `Record types count in app and database does not match\n${buildAppAndDbInfo(
+        typesInApp,
+        typesInDb,
+      )}`,
+    );
+  }
+
+  for (const typeInApp of typesInApp) {
+    if (!typesInDb.includes(typeInApp)) {
+      throw new Error(
+        `Record type ${typeInApp} is missing\n${buildAppAndDbInfo(
+          typesInApp,
+          typesInDb,
+        )}`,
+      );
+    }
+  }
+
+  const sourcesInApp = Object.values(sources);
+  const sourcesInDb = getAllSources();
+
+  if (sourcesInApp.length !== sourcesInDb.length) {
+    throw new Error(
+      `Sources count in app and database does not match\n${buildAppAndDbInfo(
+        sourcesInApp,
+        sourcesInDb,
+      )}`,
+    );
+  }
+
+  for (const sourceInApp of sourcesInApp) {
+    if (!sourcesInDb.includes(sourceInApp)) {
+      throw new Error(
+        `Source ${sourceInApp} is missing\n${buildAppAndDbInfo(
+          sourcesInApp,
+          sourcesInDb,
+        )}`,
+      );
+    }
+  }
+};
 
 const recordToEmailProps = (record: TRecord): EmailProps => {
   const subject = `Metal Tracker - New ${record.type}: ${record.title}`;
@@ -18,7 +82,7 @@ const recordToEmailProps = (record: TRecord): EmailProps => {
     month: "long",
     day: "numeric",
   });
-  const message = `A new ${record.type} has been published on ${record.sourceName}\n\nTitle: ${record.title}\nDate: ${date}\nDescription: ${record.description}\nLink: ${record.link}`;
+  const message = `A new ${record.type} has been published on ${record.sourceName}\n\nTitle: ${record.title}\nPublish date: ${date}\nDescription: ${record.description}\nLink: ${record.link}`;
 
   return {
     subject,
@@ -38,20 +102,17 @@ const sendAndSaveNewRecordsFromIntegration = async (
 
   const results = await Promise.allSettled(
     lastRecords.map(async (record) => {
+      // Check for the existence of the record in the database
+      // since lastRecords contains pre-fetched data.
       const isRecordSaved = recordExistsByKey(record.id, record.sourceName);
       if (isRecordSaved) {
         return;
       }
 
-      // sendEmail is located outside the transaction block because SQLite3
-      // serializes all transactions. It doesn't support async functions.
+      // sendEmail function is placed outside a transaction block because SQLite3
+      // serializes all transactions and does not support asynchronous functions.
       await sendEmail(recordToEmailProps(record));
-
-      transaction(() => {
-        insertRecordTypeIfNotExists(record.type);
-        insertRecordSourceIfNotExists(record.sourceName);
-        insertRecord(record);
-      });
+      insertRecord(record);
 
       logger.info(record, "Successfully sent an email with new record");
     }),
@@ -65,6 +126,8 @@ const sendAndSaveNewRecordsFromIntegration = async (
 };
 
 export const loadApp = async (): Promise<void> => {
+  checkAppIntegrity();
+
   logger.info("Initiating metal tracking process...");
 
   const results = await Promise.allSettled(

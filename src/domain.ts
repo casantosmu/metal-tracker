@@ -15,9 +15,9 @@ export const sources = {
 export type SourceName = ObjectValues<typeof sources>;
 
 export interface TRecord {
+  id: string;
   type: RecordType;
   sourceName: SourceName;
-  id: string;
   title: string;
   link: string;
   publicationDate: Date;

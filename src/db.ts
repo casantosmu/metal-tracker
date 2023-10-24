@@ -82,14 +82,10 @@ export const loadMigrations = (): void => {
   logger.info("All new migrations have been successfully executed.");
 };
 
-export const transaction = (cb: () => void): void => {
-  db.transaction(cb)();
-};
-
 interface RecordTable {
+  record_id: string;
   type: RecordType;
   source: SourceName;
-  record_id: string;
   title: string;
   link: string;
   publication_date: string;
@@ -178,22 +174,12 @@ export const getRecordsByKeys = (
   }));
 };
 
-export const insertRecordTypeIfNotExists = (type: string): void => {
-  const sql = `
-    INSERT INTO record_types (type)
-    VALUES (?)
-    ON CONFLICT DO NOTHING;
-  `;
-
-  db.prepare(sql).run(type);
+export const getAllRecordTypes = (): RecordType[] => {
+  const sql = "SELECT type FROM record_types;";
+  return db.prepare(sql).pluck().all() as RecordType[];
 };
 
-export const insertRecordSourceIfNotExists = (source: string): void => {
-  const sql = `
-    INSERT INTO sources (source)
-    VALUES (?)
-    ON CONFLICT DO NOTHING;
-  `;
-
-  db.prepare(sql).run(source);
+export const getAllSources = (): SourceName[] => {
+  const sql = "SELECT source FROM sources;";
+  return db.prepare(sql).pluck().all() as SourceName[];
 };
