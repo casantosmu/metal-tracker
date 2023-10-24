@@ -1,4 +1,4 @@
-FROM node:18.18.1-bullseye-slim AS base
+FROM node:21.0.0-bullseye-slim AS base
 
 # Install dependencies only when needed
 FROM base AS deps
