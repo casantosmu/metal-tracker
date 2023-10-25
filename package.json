@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "start": "node .",
-    "build": "shx rm -fr dist && tsc --project tsconfig.build.json && shx cp -r src/migrations dist",
+    "build": "rm -fr dist && tsc --project tsconfig.build.json && cp -r src/migrations dist",
     "dev": "tsx -r dotenv/config --watch --inspect src/index.ts",
     "test": "vitest",
     "test:coverage": "vitest run --coverage",
@@ -42,7 +42,6 @@
     "lint-staged": "^15.0.1",
     "nock": "^13.3.6",
     "prettier": "3.0.3",
-    "shx": "^0.3.4",
     "tsx": "^3.14.0",
     "typescript": "^5.2.2",
     "vitest": "^0.34.6"

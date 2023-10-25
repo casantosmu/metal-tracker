@@ -4,7 +4,10 @@ import { defineConfig } from "vitest/config";
 export default defineConfig({
   test: {
     globalSetup: "tests/utils/globalSetup.ts",
-    includeSource: ["src/**/*.ts"],
     setupFiles: "dotenv/config",
+    coverage: {
+      all: true,
+      exclude: ["src/index.ts", "tests/utils/globalSetup.ts"],
+    },
   },
 });
