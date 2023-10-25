@@ -12,7 +12,7 @@ interface UrlOptions {
   params?: Record<string, string | number>;
 }
 
-export const buildUrl = (url: string, options?: UrlOptions): string => {
+const buildUrl = (url: string, options?: UrlOptions): string => {
   const result = options?.path ? new URL(options.path, url) : new URL(url);
 
   if (options?.params) {

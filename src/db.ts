@@ -92,7 +92,7 @@ interface RecordTable {
   description: string;
 }
 
-export const insertRecord = (record: TRecord): void => {
+export const insertRecordDb = (record: TRecord): void => {
   const sql = `
     INSERT INTO records (type, source, record_id, title, link, publication_date, description)
     VALUES (@type, @source, @record_id, @title, @link, @publication_date, @description);
@@ -109,7 +109,7 @@ export const insertRecord = (record: TRecord): void => {
   });
 };
 
-export const insertRecords = (records: TRecord[]): void => {
+export const insertRecordsDb = (records: TRecord[]): void => {
   const sql = `
     INSERT INTO records (type, source, record_id, title, link, publication_date, description)
     VALUES (@type, @source, @record_id, @title, @link, @publication_date, @description);
@@ -134,7 +134,10 @@ export const insertRecords = (records: TRecord[]): void => {
   insertMany();
 };
 
-export const recordExistsByKey = (id: string, source: SourceName): boolean => {
+export const recordExistsByKeyDb = (
+  id: string,
+  source: SourceName,
+): boolean => {
   const sql = `
     SELECT EXISTS (
       SELECT 1 FROM records
@@ -145,7 +148,7 @@ export const recordExistsByKey = (id: string, source: SourceName): boolean => {
   return !!db.prepare(sql).pluck().get([id, source]);
 };
 
-export const getRecordsByKeys = (
+export const getRecordsByKeysDb = (
   keys: [id: string, source: SourceName][],
 ): TRecord[] => {
   const sql = `
@@ -174,12 +177,12 @@ export const getRecordsByKeys = (
   }));
 };
 
-export const getAllRecordTypes = (): RecordType[] => {
+export const getAllRecordTypesDb = (): RecordType[] => {
   const sql = "SELECT type FROM record_types;";
   return db.prepare(sql).pluck().all() as RecordType[];
 };
 
-export const getAllSources = (): SourceName[] => {
+export const getAllSourcesDb = (): SourceName[] => {
   const sql = "SELECT source FROM sources;";
   return db.prepare(sql).pluck().all() as SourceName[];
 };

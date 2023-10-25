@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import nock from "nock";
 import { PublishCommand, SNSClient } from "@aws-sdk/client-sns";
 import { mockClient } from "aws-sdk-client-mock";
-import { getRecordsByKeys, insertRecords } from "../src/db.js";
+import { getRecordsByKeysDb, insertRecordsDb } from "../src/db.js";
 import {
   FakeConcertsMetalList,
   FakeWordPressPostsV2,
@@ -38,22 +38,21 @@ describe("loadApp", () => {
         .get("/rss/ES_Barcelona.xml")
         .reply(200, fakeConcertsMetal.toXml());
 
-      const expectedSaved = [
-        ...fakeAngryMetalGuy.toRecords(),
-        ...fakeConcertsMetal.toRecords(),
-      ];
-
       const SNS_TOPIC_ARN = "topic-arn";
       vi.stubEnv("SNS_TOPIC_ARN", SNS_TOPIC_ARN);
 
       await loadApp();
 
-      const savedRecords = getRecordsByKeys(
+      const expectedSaved = [
+        ...fakeAngryMetalGuy.toRecords(),
+        ...fakeConcertsMetal.toRecords(),
+      ].sort(recordsSortedBy("publicationDate"));
+
+      const savedRecords = getRecordsByKeysDb(
         expectedSaved.map(({ id, sourceName }) => [id, sourceName]),
-      );
-      expect(
-        savedRecords.sort(recordsSortedBy("publicationDate")),
-      ).toStrictEqual(expectedSaved.sort(recordsSortedBy("publicationDate")));
+      ).sort(recordsSortedBy("publicationDate"));
+
+      expect(savedRecords).toStrictEqual(expectedSaved);
 
       const callsToAwsSns = snsMock.commandCalls(PublishCommand, {
         TopicArn: SNS_TOPIC_ARN,
@@ -76,10 +75,10 @@ describe("loadApp", () => {
 
       await loadApp();
 
-      const okRecords = getRecordsByKeys(
+      const savedRecords = getRecordsByKeysDb(
         fakeOk.toRecords().map(({ id, sourceName }) => [id, sourceName]),
       );
-      expect(okRecords).toHaveLength(fakeOk.length);
+      expect(savedRecords).toHaveLength(fakeOk.length);
 
       const callsToAwsSns = snsMock.commandCalls(PublishCommand);
       expect(callsToAwsSns).toHaveLength(fakeOk.length);
@@ -92,7 +91,7 @@ describe("loadApp", () => {
         sourceName: "Angry Metal Guy",
         type: "review",
       });
-      insertRecords(fakePreviousAngryMetalGuy.toRecords());
+      insertRecordsDb(fakePreviousAngryMetalGuy.toRecords());
 
       const fakeNewAngryMetalGuy = new FakeWordPressPostsV2({
         sourceName: "Angry Metal Guy",
@@ -120,8 +119,6 @@ describe("loadApp", () => {
 
   describe("When the endpoint returns records but first record sent to Amazon AWS fails", () => {
     it("should successfully save all records except the failed one", async () => {
-      snsMock.rejectsOnce();
-
       const fakeAngryMetalGuy = new FakeWordPressPostsV2({
         sourceName: "Angry Metal Guy",
         type: "review",
@@ -133,11 +130,13 @@ describe("loadApp", () => {
 
       nock("https://es.concerts-metal.com")
         .get("/rss/ES_Barcelona.xml")
-        .reply(200, new FakeConcertsMetalList().toXml());
+        .reply(200, new FakeConcertsMetalList(0).toXml());
+
+      snsMock.rejectsOnce();
 
       await loadApp();
 
-      const savedRecords = getRecordsByKeys(
+      const savedRecords = getRecordsByKeysDb(
         fakeAngryMetalGuy
           .toRecords()
           .map(({ id, sourceName }) => [id, sourceName]),
