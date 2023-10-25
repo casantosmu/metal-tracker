@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import nock from "nock";
 import { PublishCommand, SNSClient } from "@aws-sdk/client-sns";
 import { mockClient } from "aws-sdk-client-mock";
-import { getRecordsByKeys, insertRecords } from "../src/db.js";
+import { getRecordsByKeysDb, insertRecordsDb } from "../src/db.js";
 import {
   FakeConcertsMetalList,
   FakeWordPressPostsV2,
@@ -48,7 +48,7 @@ describe("loadApp", () => {
         ...fakeConcertsMetal.toRecords(),
       ].sort(recordsSortedBy("publicationDate"));
 
-      const savedRecords = getRecordsByKeys(
+      const savedRecords = getRecordsByKeysDb(
         expectedSaved.map(({ id, sourceName }) => [id, sourceName]),
       ).sort(recordsSortedBy("publicationDate"));
 
@@ -75,7 +75,7 @@ describe("loadApp", () => {
 
       await loadApp();
 
-      const savedRecords = getRecordsByKeys(
+      const savedRecords = getRecordsByKeysDb(
         fakeOk.toRecords().map(({ id, sourceName }) => [id, sourceName]),
       );
       expect(savedRecords).toHaveLength(fakeOk.length);
@@ -91,7 +91,7 @@ describe("loadApp", () => {
         sourceName: "Angry Metal Guy",
         type: "review",
       });
-      insertRecords(fakePreviousAngryMetalGuy.toRecords());
+      insertRecordsDb(fakePreviousAngryMetalGuy.toRecords());
 
       const fakeNewAngryMetalGuy = new FakeWordPressPostsV2({
         sourceName: "Angry Metal Guy",
@@ -136,7 +136,7 @@ describe("loadApp", () => {
 
       await loadApp();
 
-      const savedRecords = getRecordsByKeys(
+      const savedRecords = getRecordsByKeysDb(
         fakeAngryMetalGuy
           .toRecords()
           .map(({ id, sourceName }) => [id, sourceName]),

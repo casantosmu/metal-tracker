@@ -6,10 +6,10 @@ import {
 } from "./domain.js";
 import { integrations } from "./integrations.js";
 import {
-  getAllRecordTypes,
-  getAllSources,
-  insertRecord,
-  recordExistsByKey,
+  getAllRecordTypesDb,
+  getAllSourcesDb,
+  insertRecordDb,
+  recordExistsByKeyDb,
 } from "./db.js";
 import { sendEmail, type EmailProps } from "./emailClient.js";
 import { logger } from "./utils.js";
@@ -28,7 +28,7 @@ const buildAppAndDbInfo = (appValues: string[], dbValues: string[]): string => {
  */
 const checkAppIntegrity = (): void => {
   const typesInApp = Object.values(recordTypes);
-  const typesInDb = getAllRecordTypes();
+  const typesInDb = getAllRecordTypesDb();
 
   if (typesInApp.length !== typesInDb.length) {
     throw new Error(
@@ -51,7 +51,7 @@ const checkAppIntegrity = (): void => {
   }
 
   const sourcesInApp = Object.values(sources);
-  const sourcesInDb = getAllSources();
+  const sourcesInDb = getAllSourcesDb();
 
   if (sourcesInApp.length !== sourcesInDb.length) {
     throw new Error(
@@ -104,7 +104,7 @@ const sendAndSaveNewRecordsFromIntegration = async (
     lastRecords.map(async (record) => {
       // Check for the existence of the record in the database
       // since lastRecords contains pre-fetched data.
-      const isRecordSaved = recordExistsByKey(record.id, record.sourceName);
+      const isRecordSaved = recordExistsByKeyDb(record.id, record.sourceName);
       if (isRecordSaved) {
         return;
       }
@@ -112,7 +112,7 @@ const sendAndSaveNewRecordsFromIntegration = async (
       // sendEmail function is placed outside a transaction block because SQLite3
       // serializes all transactions and does not support asynchronous functions.
       await sendEmail(recordToEmailProps(record));
-      insertRecord(record);
+      insertRecordDb(record);
 
       logger.info(record, "Successfully sent an email with new record");
     }),
