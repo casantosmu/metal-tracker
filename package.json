@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node .",
     "build": "shx rm -fr dist && tsc --project tsconfig.build.json && shx cp -r src/migrations dist",
-    "dev": "tsx -r dotenv/config watch --inspect src/index.ts",
+    "dev": "tsx -r dotenv/config --watch --inspect src/index.ts",
     "test": "vitest",
     "test:coverage": "vitest run --coverage",
     "lint": "eslint .",
