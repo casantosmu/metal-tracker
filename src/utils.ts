@@ -1,4 +1,4 @@
-import fetch, { type RequestInit } from "node-fetch";
+import fetch, { Response } from "node-fetch";
 import { stripHtml } from "string-strip-html";
 import { Parser as XmlParser, Builder as XmlBuilder } from "xml2js";
 import { pino } from "pino";
@@ -24,7 +24,7 @@ const buildUrl = (url: string, options?: UrlOptions): string => {
   return result.toString();
 };
 
-type FetcherOptions = UrlOptions & RequestInit;
+type FetcherOptions = UrlOptions & { timeoutMs?: number };
 
 async function getFn(
   url: string,
@@ -44,7 +44,34 @@ async function getFn(
 ): Promise<string | Record<string, unknown>> {
   const endpoint = buildUrl(url, options);
 
-  const response = await fetch(endpoint, options);
+  let signal: AbortSignal | null = null;
+  let timeout: NodeJS.Timeout | undefined;
+  if (options?.timeoutMs) {
+    const controller = new AbortController();
+    signal = controller.signal;
+
+    timeout = setTimeout(() => {
+      controller.abort();
+    }, options.timeoutMs);
+  }
+
+  let response: Response;
+  try {
+    response = await fetch(endpoint, { signal });
+  } catch (error) {
+    const customError = new Error(`Request to GET '${endpoint}' failed`);
+
+    if (options?.timeoutMs && signal?.aborted) {
+      customError.cause = `Timed out (${options.timeoutMs} ms)`;
+    } else {
+      customError.cause = error;
+    }
+
+    throw customError;
+  } finally {
+    clearTimeout(timeout);
+  }
+
   const text = await response.text();
 
   if (!response.ok) {
