@@ -1,5 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import nock from "nock";
+import nock, {
+  disableNetConnect as nockDisableNetConnect,
+  cleanAll as nockCleanAll,
+} from "nock";
 import { PublishCommand, SNSClient } from "@aws-sdk/client-sns";
 import { mockClient } from "aws-sdk-client-mock";
 import { getRecordsByKeysDb, insertRecordsDb } from "../src/db.js";
@@ -11,12 +14,15 @@ import {
 
 const snsMock = mockClient(SNSClient);
 
+nockDisableNetConnect();
+
 const loadApp = async (): Promise<void> => {
   await (await import("../src/app.js")).loadApp();
 };
 
 beforeEach(() => {
   snsMock.reset();
+  nockCleanAll();
   vi.resetModules();
   vi.unstubAllEnvs();
 });
@@ -117,7 +123,44 @@ describe("loadApp", () => {
     });
   });
 
-  describe("When the endpoint returns records but first record sent to Amazon AWS fails", () => {
+  describe("when requests take more than REQUEST_TIMEOUT_MS env variable", () => {
+    it("should cancel the request and not save or send the records", async () => {
+      const REQUEST_TIMEOUT_MS = 1000;
+
+      const fakeAngryMetalGuy = new FakeWordPressPostsV2({
+        sourceName: "Angry Metal Guy",
+        type: "review",
+      });
+      nock("https://angrymetalguy.com")
+        .get("/wp-json/wp/v2/posts")
+        .query(true)
+        .delay(REQUEST_TIMEOUT_MS + 1000)
+        .reply(200, fakeAngryMetalGuy.toJson());
+
+      const fakeConcertsMetal = new FakeConcertsMetalList();
+      nock("https://es.concerts-metal.com")
+        .get("/rss/ES_Barcelona.xml")
+        .delay(REQUEST_TIMEOUT_MS + 1000)
+        .reply(200, fakeConcertsMetal.toXml());
+
+      vi.stubEnv("REQUEST_TIMEOUT_MS", REQUEST_TIMEOUT_MS.toString());
+
+      await loadApp();
+
+      const savedRecords = getRecordsByKeysDb(
+        [
+          ...fakeAngryMetalGuy.toRecords(),
+          ...fakeConcertsMetal.toRecords(),
+        ].map(({ id, sourceName }) => [id, sourceName]),
+      );
+      expect(savedRecords).toHaveLength(0);
+
+      const callsToAwsSns = snsMock.commandCalls(PublishCommand);
+      expect(callsToAwsSns).toHaveLength(0);
+    });
+  });
+
+  describe("when the endpoint returns records but first record sent to Amazon AWS fails", () => {
     it("should successfully save all records except the failed one", async () => {
       const fakeAngryMetalGuy = new FakeWordPressPostsV2({
         sourceName: "Angry Metal Guy",

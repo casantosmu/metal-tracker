@@ -7,10 +7,13 @@ import {
   recordTypes,
 } from "./domain.js";
 
+const REQUEST_TIMEOUT_MS =
+  Number(process.env["REQUEST_TIMEOUT_MS"]) || 60 * 1000;
+
 const wordPressUtils = {
   maxPerPage: 100,
   jsonV2PostsPath: "/wp-json/wp/v2/posts",
-  jsonV2PostSchema: z.array(
+  jsonV2PostsResponseSchema: z.array(
     z.object({
       id: z.number(),
       date: z.coerce.date(),
@@ -29,6 +32,7 @@ const angryMetalGuy = {
     const fetchPostsAfter = subtractDays(new Date(Date.now()), 31);
 
     const response = await fetcher.get("https://angrymetalguy.com", {
+      timeoutMs: REQUEST_TIMEOUT_MS,
       path: wordPressUtils.jsonV2PostsPath,
       params: {
         page: 1,
@@ -41,7 +45,7 @@ const angryMetalGuy = {
       },
     });
 
-    const validated = wordPressUtils.jsonV2PostSchema.parse(response);
+    const validated = wordPressUtils.jsonV2PostsResponseSchema.parse(response);
 
     return validated.map(
       ({
@@ -63,16 +67,37 @@ const angryMetalGuy = {
   },
 };
 
+const concertsMetalResponseSchema = z.object({
+  rss: z.object({
+    channel: z
+      .array(
+        z.object({
+          item: z.array(
+            z.object({
+              title: z.array(z.string()).nonempty(),
+              pubDate: z.array(z.coerce.date()).nonempty(),
+              link: z.array(z.string()).nonempty(),
+              guid: z.array(z.string()).nonempty(),
+              description: z.array(z.string()).nonempty(),
+            }),
+          ),
+        }),
+      )
+      .nonempty(),
+  }),
+});
+
 const concertsMetal = {
   sourceName: sources.concertsMetal,
   async getLastRecords(): Promise<TRecord[]> {
     const response = await fetcher.get("https://es.concerts-metal.com", {
+      timeoutMs: REQUEST_TIMEOUT_MS,
       path: "/rss/ES_Barcelona.xml",
       responseType: "text",
     });
     const json = await xmlParser(response);
 
-    const validated = this.jsonResponseSchema.parse(json);
+    const validated = concertsMetalResponseSchema.parse(json);
 
     return validated.rss.channel[0].item.map((item) => ({
       type: recordTypes.concert,
@@ -84,25 +109,6 @@ const concertsMetal = {
       description: removeHtml(item.description[0]),
     }));
   },
-  jsonResponseSchema: z.object({
-    rss: z.object({
-      channel: z
-        .array(
-          z.object({
-            item: z.array(
-              z.object({
-                title: z.array(z.string()).nonempty(),
-                pubDate: z.array(z.coerce.date()).nonempty(),
-                link: z.array(z.string()).nonempty(),
-                guid: z.array(z.string()).nonempty(),
-                description: z.array(z.string()).nonempty(),
-              }),
-            ),
-          }),
-        )
-        .nonempty(),
-    }),
-  }),
 };
 
 export const integrations: Record<string, Integration> = {
