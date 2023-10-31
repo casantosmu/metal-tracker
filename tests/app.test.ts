@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import nock, {
   disableNetConnect as nockDisableNetConnect,
   cleanAll as nockCleanAll,
@@ -16,16 +16,40 @@ const snsMock = mockClient(SNSClient);
 
 nockDisableNetConnect();
 
-const loadApp = async (): Promise<void> => {
-  await (await import("../src/app.js")).loadApp();
-};
-
 beforeEach(() => {
   snsMock.reset();
   nockCleanAll();
   vi.resetModules();
   vi.unstubAllEnvs();
+  vi.useFakeTimers();
 });
+
+afterEach(() => {
+  vi.useRealTimers();
+});
+
+const loadApp = async (): Promise<void> => {
+  await (await import("../src/app.js")).loadApp();
+};
+
+const buildAngryMetalGuyInterceptor = (): nock.Interceptor => {
+  vi.setSystemTime(new Date("May 27, 2009"));
+
+  return nock("https://angrymetalguy.com")
+    .get("/wp-json/wp/v2/posts")
+    .query({
+      page: 1,
+      per_page: 100,
+      order: "desc",
+      orderby: "date",
+      after: new Date("April 26, 2009").toISOString(),
+      tags: 8161,
+      categories: 13,
+    });
+};
+
+const buildConcertsMetalInterceptor = (): nock.Interceptor =>
+  nock("https://es.concerts-metal.com").get("/rss/ES_Barcelona.xml");
 
 describe("loadApp", () => {
   describe("when endpoints return a 200 status code", () => {
@@ -34,50 +58,41 @@ describe("loadApp", () => {
         sourceName: "Angry Metal Guy",
         type: "review",
       });
-      nock("https://angrymetalguy.com")
-        .get("/wp-json/wp/v2/posts")
-        .query(true)
-        .reply(200, fakeAngryMetalGuy.toJson());
+      buildAngryMetalGuyInterceptor().reply(200, fakeAngryMetalGuy.toJson());
 
       const fakeConcertsMetal = new FakeConcertsMetalList();
-      nock("https://es.concerts-metal.com")
-        .get("/rss/ES_Barcelona.xml")
-        .reply(200, fakeConcertsMetal.toXml());
+      buildConcertsMetalInterceptor().reply(200, fakeConcertsMetal.toXml());
 
       const SNS_TOPIC_ARN = "topic-arn";
       vi.stubEnv("SNS_TOPIC_ARN", SNS_TOPIC_ARN);
 
-      await loadApp();
-
-      const expectedSaved = [
+      const allRecords = [
         ...fakeAngryMetalGuy.toRecords(),
         ...fakeConcertsMetal.toRecords(),
-      ].sort(recordsSortedBy("publicationDate"));
+      ];
+
+      await loadApp();
 
       const savedRecords = getRecordsByKeysDb(
-        expectedSaved.map(({ id, sourceName }) => [id, sourceName]),
-      ).sort(recordsSortedBy("publicationDate"));
-
-      expect(savedRecords).toStrictEqual(expectedSaved);
+        allRecords.map(({ id, sourceName }) => [id, sourceName]),
+      );
+      expect(
+        savedRecords.sort(recordsSortedBy("publicationDate")),
+      ).toStrictEqual(allRecords.sort(recordsSortedBy("publicationDate")));
 
       const callsToAwsSns = snsMock.commandCalls(PublishCommand, {
         TopicArn: SNS_TOPIC_ARN,
       });
-      expect(callsToAwsSns).toHaveLength(expectedSaved.length);
+      expect(callsToAwsSns).toHaveLength(allRecords.length);
     });
   });
 
   describe("when one endpoint fails", () => {
     it("should save the remaining records returned by the endpoints with a 200 status code and send them to Amazon SNS", async () => {
-      nock("https://angrymetalguy.com")
-        .get("/wp-json/wp/v2/posts")
-        .query(true)
-        .reply(500, { error: "msg" });
+      buildAngryMetalGuyInterceptor().reply(500, { error: "msg" });
 
       const fakeOk = new FakeConcertsMetalList();
-      nock("https://es.concerts-metal.com")
-        .get("/rss/ES_Barcelona.xml")
-        .reply(200, fakeOk.toXml());
+      buildConcertsMetalInterceptor().reply(200, fakeOk.toXml());
 
       await loadApp();
 
@@ -97,24 +112,20 @@ describe("loadApp", () => {
         sourceName: "Angry Metal Guy",
         type: "review",
       });
-      insertRecordsDb(fakePreviousAngryMetalGuy.toRecords());
-
       const fakeNewAngryMetalGuy = new FakeWordPressPostsV2({
         sourceName: "Angry Metal Guy",
         type: "review",
       });
+      buildAngryMetalGuyInterceptor().reply(200, [
+        ...fakePreviousAngryMetalGuy.toJson(),
+        ...fakeNewAngryMetalGuy.toJson(),
+      ]);
+      insertRecordsDb(fakePreviousAngryMetalGuy.toRecords());
 
-      nock("https://angrymetalguy.com")
-        .get("/wp-json/wp/v2/posts")
-        .query(true)
-        .reply(200, [
-          ...fakePreviousAngryMetalGuy.toJson(),
-          ...fakeNewAngryMetalGuy.toJson(),
-        ]);
-
-      nock("https://es.concerts-metal.com")
-        .get("/rss/ES_Barcelona.xml")
-        .reply(200, new FakeConcertsMetalList(0).toXml());
+      buildConcertsMetalInterceptor().reply(
+        200,
+        new FakeConcertsMetalList(0).toXml(),
+      );
 
       await loadApp();
 
@@ -131,27 +142,26 @@ describe("loadApp", () => {
         sourceName: "Angry Metal Guy",
         type: "review",
       });
-      nock("https://angrymetalguy.com")
-        .get("/wp-json/wp/v2/posts")
-        .query(true)
+      buildAngryMetalGuyInterceptor()
         .delay(REQUEST_TIMEOUT_MS + 1000)
         .reply(200, fakeAngryMetalGuy.toJson());
 
       const fakeConcertsMetal = new FakeConcertsMetalList();
-      nock("https://es.concerts-metal.com")
-        .get("/rss/ES_Barcelona.xml")
+      buildConcertsMetalInterceptor()
         .delay(REQUEST_TIMEOUT_MS + 1000)
         .reply(200, fakeConcertsMetal.toXml());
 
-      vi.stubEnv("REQUEST_TIMEOUT_MS", REQUEST_TIMEOUT_MS.toString());
+      vi.stubEnv("REQUEST_TIMEOUT_MS", `${REQUEST_TIMEOUT_MS}`);
+
+      const allRecords = [
+        ...fakeAngryMetalGuy.toRecords(),
+        ...fakeConcertsMetal.toRecords(),
+      ];
 
       await loadApp();
 
       const savedRecords = getRecordsByKeysDb(
-        [
-          ...fakeAngryMetalGuy.toRecords(),
-          ...fakeConcertsMetal.toRecords(),
-        ].map(({ id, sourceName }) => [id, sourceName]),
+        allRecords.map(({ id, sourceName }) => [id, sourceName]),
       );
       expect(savedRecords).toHaveLength(0);
 
@@ -166,14 +176,12 @@ describe("loadApp", () => {
         sourceName: "Angry Metal Guy",
         type: "review",
       });
-      nock("https://angrymetalguy.com")
-        .get("/wp-json/wp/v2/posts")
-        .query(true)
-        .reply(200, fakeAngryMetalGuy.toJson());
+      buildAngryMetalGuyInterceptor().reply(200, fakeAngryMetalGuy.toJson());
 
-      nock("https://es.concerts-metal.com")
-        .get("/rss/ES_Barcelona.xml")
-        .reply(200, new FakeConcertsMetalList(0).toXml());
+      buildConcertsMetalInterceptor().reply(
+        200,
+        new FakeConcertsMetalList(0).toXml(),
+      );
 
       snsMock.rejectsOnce();
 

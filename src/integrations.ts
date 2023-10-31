@@ -1,11 +1,6 @@
 import { z } from "zod";
 import { fetcher, removeHtml, subtractDays, xmlParser } from "./utils.js";
-import {
-  type TRecord,
-  type Integration,
-  sources,
-  recordTypes,
-} from "./domain.js";
+import { type Integration, sources, recordTypes } from "./domain.js";
 
 const REQUEST_TIMEOUT_MS =
   Number(process.env["REQUEST_TIMEOUT_MS"]) || 60 * 1000;
@@ -24,15 +19,14 @@ const wordPressUtils = {
   ),
 };
 
-const angryMetalGuy = {
+const angryMetalGuy: Integration = {
   sourceName: sources.angryMetalGuy,
-  async getLastRecords(): Promise<TRecord[]> {
+  async getLastRecords() {
     const progressiveMetalTag = 8161;
     const reviewCategory = 13;
     const fetchPostsAfter = subtractDays(new Date(Date.now()), 31);
 
     const response = await fetcher.get("https://angrymetalguy.com", {
-      timeoutMs: REQUEST_TIMEOUT_MS,
       path: wordPressUtils.jsonV2PostsPath,
       params: {
         page: 1,
@@ -43,6 +37,7 @@ const angryMetalGuy = {
         tags: progressiveMetalTag,
         categories: reviewCategory,
       },
+      timeoutMs: REQUEST_TIMEOUT_MS,
     });
 
     const validated = wordPressUtils.jsonV2PostsResponseSchema.parse(response);
@@ -87,13 +82,13 @@ const concertsMetalResponseSchema = z.object({
   }),
 });
 
-const concertsMetal = {
+const concertsMetal: Integration = {
   sourceName: sources.concertsMetal,
-  async getLastRecords(): Promise<TRecord[]> {
+  async getLastRecords() {
     const response = await fetcher.get("https://es.concerts-metal.com", {
-      timeoutMs: REQUEST_TIMEOUT_MS,
       path: "/rss/ES_Barcelona.xml",
       responseType: "text",
+      timeoutMs: REQUEST_TIMEOUT_MS,
     });
     const json = await xmlParser(response);
 
