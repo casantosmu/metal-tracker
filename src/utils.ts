@@ -44,32 +44,23 @@ async function getFn(
 ): Promise<string | Record<string, unknown>> {
   const endpoint = buildUrl(url, options);
 
-  let signal: AbortSignal | null = null;
-  let timeout: NodeJS.Timeout | undefined;
-  if (options?.timeoutMs) {
-    const controller = new AbortController();
-    signal = controller.signal;
-
-    timeout = setTimeout(() => {
-      controller.abort();
-    }, options.timeoutMs);
-  }
+  const abortSignal = options?.timeoutMs
+    ? AbortSignal.timeout(options.timeoutMs)
+    : null;
 
   let response: Response;
   try {
-    response = await fetch(endpoint, { signal });
+    response = await fetch(endpoint, { signal: abortSignal });
   } catch (error) {
     const customError = new Error(`Request to GET '${endpoint}' failed`);
 
-    if (options?.timeoutMs && signal?.aborted) {
+    if (options?.timeoutMs && abortSignal?.aborted) {
       customError.cause = `Timed out (${options.timeoutMs} ms)`;
     } else {
       customError.cause = error;
     }
 
     throw customError;
-  } finally {
-    clearTimeout(timeout);
   }
 
   const text = await response.text();
