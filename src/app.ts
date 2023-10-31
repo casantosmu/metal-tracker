@@ -1,79 +1,8 @@
-import {
-  type Integration,
-  type TRecord,
-  recordTypes,
-  sources,
-} from "./domain.js";
+import type { Integration, TRecord } from "./domain.js";
 import { integrations } from "./integrations.js";
-import {
-  getAllRecordTypesDb,
-  getAllSourcesDb,
-  insertRecordDb,
-  recordExistsByKeyDb,
-} from "./db.js";
+import { insertRecordDb, recordExistsByKeyDb } from "./db.js";
 import { sendEmail, type EmailProps } from "./emailClient.js";
 import { logger } from "./utils.js";
-
-const buildAppAndDbInfo = (appValues: string[], dbValues: string[]): string => {
-  return `Application values:\n ${appValues.join("\n ")}\nTotal: ${
-    appValues.length
-  }\n------------\nDatabase values:\n ${dbValues.join("\n ")}\nTotal: ${
-    dbValues.length
-  }`;
-};
-
-/**
- * Records sources and types are hardcoded in code.
- * This function ensures the application and the database values remain synchronized.
- * Any addition, deletion, or update should be mirrored in both places.
- */
-const checkAppIntegrity = (): void => {
-  const typesInApp = Object.values(recordTypes);
-  const typesInDb = getAllRecordTypesDb();
-
-  if (typesInApp.length !== typesInDb.length) {
-    throw new Error(
-      `Record types count in app and database does not match\n${buildAppAndDbInfo(
-        typesInApp,
-        typesInDb,
-      )}`,
-    );
-  }
-
-  for (const typeInApp of typesInApp) {
-    if (!typesInDb.includes(typeInApp)) {
-      throw new Error(
-        `Record type ${typeInApp} is missing\n${buildAppAndDbInfo(
-          typesInApp,
-          typesInDb,
-        )}`,
-      );
-    }
-  }
-
-  const sourcesInApp = Object.values(sources);
-  const sourcesInDb = getAllSourcesDb();
-
-  if (sourcesInApp.length !== sourcesInDb.length) {
-    throw new Error(
-      `Sources count in app and database does not match\n${buildAppAndDbInfo(
-        sourcesInApp,
-        sourcesInDb,
-      )}`,
-    );
-  }
-
-  for (const sourceInApp of sourcesInApp) {
-    if (!sourcesInDb.includes(sourceInApp)) {
-      throw new Error(
-        `Source ${sourceInApp} is missing\n${buildAppAndDbInfo(
-          sourcesInApp,
-          sourcesInDb,
-        )}`,
-      );
-    }
-  }
-};
 
 const recordToEmailProps = (record: TRecord): EmailProps => {
   const subject = `Metal Tracker - New ${record.type}: ${record.title}`;
@@ -127,8 +56,6 @@ const sendAndSaveNewRecordsFromIntegration = async (
 };
 
 export const loadApp = async (): Promise<void> => {
-  checkAppIntegrity();
-
   logger.info("Initiating metal tracking process...");
 
   const results = await Promise.allSettled(
