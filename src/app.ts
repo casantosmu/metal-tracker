@@ -23,7 +23,8 @@ const buildAppAndDbInfo = (appValues: string[], dbValues: string[]): string => {
 };
 
 /**
- * Ensures values in the application and the database remain synchronized.
+ * Records sources and types are hardcoded in code.
+ * This function ensures the application and the database values remain synchronized.
  * Any addition, deletion, or update should be mirrored in both places.
  */
 const checkAppIntegrity = (): void => {
