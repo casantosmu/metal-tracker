@@ -7,7 +7,8 @@ export default defineConfig({
     setupFiles: "dotenv/config",
     coverage: {
       all: true,
-      exclude: ["src/index.ts", "tests/utils/globalSetup.ts"],
+      include: ["src"],
+      exclude: ["src/index.ts", "src/types.ts"],
     },
   },
 });
