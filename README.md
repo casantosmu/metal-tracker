@@ -1,3 +1,5 @@
+[![codecov](https://codecov.io/github/casantosmu/metal-tracker/graph/badge.svg?token=D2EKM1OD1N)](https://codecov.io/github/casantosmu/metal-tracker)
+
 # Metal Tracker
 
 Metal Tracker is a script that fetches and sends email notifications for new concerts, reviews, and news related to the metal music from various sources of interest.
