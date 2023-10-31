@@ -7,7 +7,7 @@ import { logger } from "./utils.js";
 
 const filename = path.join(process.cwd(), "sqlite", "data.db");
 const db = new BetterSqlite3(filename, {
-  verbose(message): void {
+  verbose(message) {
     logger.debug(message);
   },
 });
@@ -24,22 +24,24 @@ interface Migration {
 const parseMigrations = (migrationsDir: string): Migration[] => {
   const filenames = fs.readdirSync(migrationsDir);
 
-  return filenames.map((filename) => {
-    const [id] = filename.split("-", 1);
-    const idToNumber = z.coerce.number().int().positive().safeParse(id);
-    const isValidFormat = filename.endsWith(".sql");
+  return filenames
+    .map((filename) => {
+      const [id] = filename.split("-", 1);
+      const idToNumber = z.coerce.number().int().positive().safeParse(id);
+      const isValidFormat = filename.endsWith(".sql");
 
-    if (!idToNumber.success || !isValidFormat) {
-      throw new Error(
-        `Invalid migration filename '${filename}'. It must follow the schema of 'xxx-yyyyy.sql', where 'x' is a positive integer, and 'y' can be anything.`,
-      );
-    }
+      if (!idToNumber.success || !isValidFormat) {
+        throw new Error(
+          `Invalid migration filename '${filename}'. It must follow the schema of 'xxx-yyyyy.sql', where 'x' is a positive integer, and 'y' can be anything.`,
+        );
+      }
 
-    const filePath = path.join(migrationsDir, filename);
-    const source = fs.readFileSync(filePath, "utf8");
+      const filePath = path.join(migrationsDir, filename);
+      const source = fs.readFileSync(filePath, "utf8");
 
-    return { id: idToNumber.data, source };
-  });
+      return { id: idToNumber.data, source };
+    })
+    .sort((a, b) => a.id - b.id);
 };
 
 export const loadMigrations = (): void => {
@@ -65,11 +67,11 @@ export const loadMigrations = (): void => {
 
   logger.info(`Found ${migrationsToRun.length} new migrations to run.`);
 
-  const run = db.transaction(() => {
-    const insert = db.prepare(
-      "INSERT INTO migrations (id, source) VALUES (?, ?);",
-    );
+  const insert = db.prepare(
+    "INSERT INTO migrations (id, source) VALUES (?, ?);",
+  );
 
+  const run = db.transaction(() => {
     migrationsToRun.forEach((migration) => {
       db.exec(migration.source);
       insert.run([migration.id, migration.source]);
