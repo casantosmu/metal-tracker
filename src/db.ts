@@ -178,13 +178,3 @@ export const getRecordsByKeysDb = (
     description: result.description,
   }));
 };
-
-export const getAllRecordTypesDb = (): RecordType[] => {
-  const sql = "SELECT type FROM record_types;";
-  return db.prepare(sql).pluck().all() as RecordType[];
-};
-
-export const getAllSourcesDb = (): SourceName[] => {
-  const sql = "SELECT source FROM sources;";
-  return db.prepare(sql).pluck().all() as SourceName[];
-};
