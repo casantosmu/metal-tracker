@@ -5,7 +5,8 @@
     "plugin:@typescript-eslint/strict-type-checked",
     "plugin:@typescript-eslint/stylistic-type-checked",
     "plugin:import/recommended",
-    "plugin:import/typescript"
+    "plugin:import/typescript",
+    "plugin:unicorn/recommended"
   ],
   "overrides": [
     {
@@ -38,7 +39,19 @@
       "error",
       { "allowExpressions": true }
     ],
-    "no-console": "error"
+    "no-console": "error",
+    "unicorn/prefer-code-point": "off",
+    "unicorn/prevent-abbreviations": [
+      "error",
+      {
+        "replacements": {
+          "db": false,
+          "dir": false,
+          "props": false,
+          "fn": false
+        }
+      }
+    ]
   },
   "ignorePatterns": ["dist", "coverage"]
 }

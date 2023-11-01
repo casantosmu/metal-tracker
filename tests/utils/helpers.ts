@@ -2,13 +2,6 @@ import { faker } from "@faker-js/faker";
 import type { TRecord } from "../../src/domain.js";
 import { toXml } from "../../src/utils.js";
 
-type ListCount =
-  | number
-  | {
-      min: number;
-      max: number;
-    };
-
 interface FakeWordPressPostV2Props {
   type: string;
   source: string;
@@ -51,12 +44,9 @@ export class FakeWordPressPostsV2 {
   private readonly posts: FakeWordPressPostV2[];
   readonly length: number;
 
-  constructor(
-    props: FakeWordPressPostV2Props,
-    count: ListCount = { min: 1, max: 25 },
-  ) {
+  constructor(props: FakeWordPressPostV2Props, count?: number) {
     this.posts = faker.helpers.multiple(() => new FakeWordPressPostV2(props), {
-      count,
+      count: count ?? { min: 1, max: 25 },
     });
     this.length = this.posts.length;
   }
@@ -106,9 +96,9 @@ export class FakeConcertsMetalList {
   private readonly items: FakeConcertsMetalItem[];
   readonly length: number;
 
-  constructor(count: ListCount = { min: 1, max: 25 }) {
+  constructor(count?: number) {
     this.items = faker.helpers.multiple(() => new FakeConcertsMetalItem(), {
-      count,
+      count: count ?? { min: 1, max: 25 },
     });
     this.length = this.items.length;
   }

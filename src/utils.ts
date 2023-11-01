@@ -16,9 +16,9 @@ const buildUrl = (url: string, options?: UrlOptions): string => {
   const result = options?.path ? new URL(options.path, url) : new URL(url);
 
   if (options?.params) {
-    Object.entries(options.params).forEach(([key, value]) => {
+    for (const [key, value] of Object.entries(options.params)) {
       result.searchParams.append(key, value.toString());
-    });
+    }
   }
 
   return result.toString();
@@ -46,7 +46,8 @@ async function getFn(
 
   const abortSignal = options?.timeoutMs
     ? AbortSignal.timeout(options.timeoutMs)
-    : null;
+    : // eslint-disable-next-line unicorn/no-null
+      null;
 
   let response: Response;
   try {
@@ -54,11 +55,10 @@ async function getFn(
   } catch (error) {
     const customError = new Error(`Request to GET '${endpoint}' failed`);
 
-    if (options?.timeoutMs && abortSignal?.aborted) {
-      customError.cause = `Timed out (${options.timeoutMs} ms)`;
-    } else {
-      customError.cause = error;
-    }
+    customError.cause =
+      options?.timeoutMs && abortSignal?.aborted
+        ? `Timed out (${options.timeoutMs} ms)`
+        : error;
 
     throw customError;
   }
