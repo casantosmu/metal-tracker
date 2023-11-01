@@ -29,7 +29,8 @@ afterEach(() => {
 });
 
 const loadApp = async (): Promise<void> => {
-  await (await import("../src/app.js")).loadApp();
+  const app = await import("../src/app.js");
+  await app.loadApp();
 };
 
 const buildAngryMetalGuyInterceptor = (): nock.Interceptor => {

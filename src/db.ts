@@ -60,7 +60,7 @@ export const loadMigrations = (): void => {
 
   const migrationsToRun = migrations.slice(firstMigrationToRun);
 
-  if (!migrationsToRun.length) {
+  if (migrationsToRun.length === 0) {
     logger.info("No new migrations to run.");
     return;
   }
@@ -72,11 +72,11 @@ export const loadMigrations = (): void => {
   );
 
   const run = db.transaction(() => {
-    migrationsToRun.forEach((migration) => {
+    for (const migration of migrationsToRun) {
       db.exec(migration.source);
       insert.run([migration.id, migration.source]);
       logger.info(`Executed migration ${migration.id}`);
-    });
+    }
   });
 
   run();
@@ -120,7 +120,7 @@ export const insertRecordsDb = (records: TRecord[]): void => {
   const insert = db.prepare(sql);
 
   const insertMany = db.transaction(() => {
-    records.forEach((record) => {
+    for (const record of records) {
       insert.run({
         type: record.type,
         source: record.source,
@@ -130,7 +130,7 @@ export const insertRecordsDb = (records: TRecord[]): void => {
         publication_date: record.publicationDate.toISOString(),
         description: record.description,
       });
-    });
+    }
   });
 
   insertMany();

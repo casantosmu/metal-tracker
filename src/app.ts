@@ -1,8 +1,13 @@
 import type { Integration, TRecord } from "./domain.js";
 import { integrations } from "./integrations.js";
 import { insertRecordDb, recordExistsByKeyDb } from "./db.js";
-import { sendEmail, type EmailProps } from "./emailClient.js";
+import { sendEmail, type EmailProps } from "./email-client.js";
 import { logger } from "./utils.js";
+
+const handleError = (error: unknown): void => {
+  logger.error(error);
+  process.exitCode = 1;
+};
 
 const recordToEmailProps = (record: TRecord): EmailProps => {
   const subject = `Metal Tracker - New ${record.type}: ${record.title}`;
@@ -25,7 +30,7 @@ const sendAndSaveNewRecordsFromIntegration = async (
 ): Promise<void> => {
   const lastRecords = await integration.getLastRecords();
 
-  if (!lastRecords.length) {
+  if (lastRecords.length === 0) {
     logger.info(`No records were found from '${integration.source}'.`);
     return;
   }
@@ -48,25 +53,27 @@ const sendAndSaveNewRecordsFromIntegration = async (
     }),
   );
 
-  results.forEach((result) => {
+  for (const result of results) {
     if (result.status === "rejected") {
-      logger.error(result.reason);
+      handleError(result.reason);
     }
-  });
+  }
 };
 
 export const loadApp = async (): Promise<void> => {
   logger.info("Initiating metal tracking process...");
 
   const results = await Promise.allSettled(
-    Object.values(integrations).map(sendAndSaveNewRecordsFromIntegration),
+    Object.values(integrations).map((integration) =>
+      sendAndSaveNewRecordsFromIntegration(integration),
+    ),
   );
 
-  results.forEach((result) => {
+  for (const result of results) {
     if (result.status === "rejected") {
-      logger.error(result.reason);
+      handleError(result.reason);
     }
-  });
+  }
 
   logger.info("Metal tracking process completed.");
 };

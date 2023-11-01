@@ -23,12 +23,12 @@ export const sendEmail = async ({
   subject,
   message,
 }: EmailProps): Promise<void> => {
-  const cleanSubject = subject.split("").reduce((result, character) => {
+  let cleanSubject = "";
+  for (const character of subject) {
     if (isAsciiCharacter(character) && !isControlCharacter(character)) {
-      return result + character;
+      cleanSubject += character;
     }
-    return result;
-  });
+  }
   const finalSubject = truncateString(cleanSubject, SNS_SUBJECT_MAX_LENGTH);
 
   await snsClient.send(
