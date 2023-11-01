@@ -55,7 +55,7 @@ describe("loadApp", () => {
   describe("when endpoints return a 200 status code", () => {
     it("should save the records returned by the endpoints and send them to Amazon SNS using the SNS_TOPIC_ARN env variable", async () => {
       const fakeAngryMetalGuy = new FakeWordPressPostsV2({
-        sourceName: "Angry Metal Guy",
+        source: "Angry Metal Guy",
         type: "review",
       });
       buildAngryMetalGuyInterceptor().reply(200, fakeAngryMetalGuy.toJson());
@@ -74,7 +74,7 @@ describe("loadApp", () => {
       await loadApp();
 
       const savedRecords = getRecordsByKeysDb(
-        allRecords.map(({ id, sourceName }) => [id, sourceName]),
+        allRecords.map(({ id, source }) => [id, source]),
       );
       expect(
         savedRecords.sort(recordsSortedBy("publicationDate")),
@@ -97,7 +97,7 @@ describe("loadApp", () => {
       await loadApp();
 
       const savedRecords = getRecordsByKeysDb(
-        fakeOk.toRecords().map(({ id, sourceName }) => [id, sourceName]),
+        fakeOk.toRecords().map(({ id, source }) => [id, source]),
       );
       expect(savedRecords).toHaveLength(fakeOk.length);
 
@@ -109,11 +109,11 @@ describe("loadApp", () => {
   describe("when one endpoint returns new records and previously added records", () => {
     it("should only send the new records to Amazon SNS", async () => {
       const fakePreviousAngryMetalGuy = new FakeWordPressPostsV2({
-        sourceName: "Angry Metal Guy",
+        source: "Angry Metal Guy",
         type: "review",
       });
       const fakeNewAngryMetalGuy = new FakeWordPressPostsV2({
-        sourceName: "Angry Metal Guy",
+        source: "Angry Metal Guy",
         type: "review",
       });
       buildAngryMetalGuyInterceptor().reply(200, [
@@ -139,7 +139,7 @@ describe("loadApp", () => {
       const REQUEST_TIMEOUT_MS = 1000;
 
       const fakeAngryMetalGuy = new FakeWordPressPostsV2({
-        sourceName: "Angry Metal Guy",
+        source: "Angry Metal Guy",
         type: "review",
       });
       buildAngryMetalGuyInterceptor()
@@ -161,7 +161,7 @@ describe("loadApp", () => {
       await loadApp();
 
       const savedRecords = getRecordsByKeysDb(
-        allRecords.map(({ id, sourceName }) => [id, sourceName]),
+        allRecords.map(({ id, source }) => [id, source]),
       );
       expect(savedRecords).toHaveLength(0);
 
@@ -173,7 +173,7 @@ describe("loadApp", () => {
   describe("when the endpoint returns records but first record sent to Amazon AWS fails", () => {
     it("should successfully save all records except the failed one", async () => {
       const fakeAngryMetalGuy = new FakeWordPressPostsV2({
-        sourceName: "Angry Metal Guy",
+        source: "Angry Metal Guy",
         type: "review",
       });
       buildAngryMetalGuyInterceptor().reply(200, fakeAngryMetalGuy.toJson());
@@ -188,9 +188,7 @@ describe("loadApp", () => {
       await loadApp();
 
       const savedRecords = getRecordsByKeysDb(
-        fakeAngryMetalGuy
-          .toRecords()
-          .map(({ id, sourceName }) => [id, sourceName]),
+        fakeAngryMetalGuy.toRecords().map(({ id, source }) => [id, source]),
       );
       expect(savedRecords).toHaveLength(fakeAngryMetalGuy.length - 1);
     });

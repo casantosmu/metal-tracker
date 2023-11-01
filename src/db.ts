@@ -2,7 +2,7 @@ import path from "node:path";
 import fs from "node:fs";
 import BetterSqlite3 from "better-sqlite3";
 import { z } from "zod";
-import type { TRecord, RecordType, SourceName } from "./domain.js";
+import type { TRecord } from "./domain.js";
 import { logger } from "./utils.js";
 
 const filename = path.join(process.cwd(), "sqlite", "data.db");
@@ -86,8 +86,8 @@ export const loadMigrations = (): void => {
 
 interface RecordTable {
   record_id: string;
-  type: RecordType;
-  source: SourceName;
+  type: string;
+  source: string;
   title: string;
   link: string;
   publication_date: string;
@@ -102,7 +102,7 @@ export const insertRecordDb = (record: TRecord): void => {
 
   db.prepare(sql).run({
     type: record.type,
-    source: record.sourceName,
+    source: record.source,
     record_id: record.id,
     title: record.title,
     link: record.link,
@@ -123,7 +123,7 @@ export const insertRecordsDb = (records: TRecord[]): void => {
     records.forEach((record) => {
       insert.run({
         type: record.type,
-        source: record.sourceName,
+        source: record.source,
         record_id: record.id,
         title: record.title,
         link: record.link,
@@ -136,10 +136,7 @@ export const insertRecordsDb = (records: TRecord[]): void => {
   insertMany();
 };
 
-export const recordExistsByKeyDb = (
-  id: string,
-  source: SourceName,
-): boolean => {
+export const recordExistsByKeyDb = (id: string, source: string): boolean => {
   const sql = `
     SELECT EXISTS (
       SELECT 1 FROM records
@@ -151,7 +148,7 @@ export const recordExistsByKeyDb = (
 };
 
 export const getRecordsByKeysDb = (
-  keys: [id: string, source: SourceName][],
+  keys: [id: string, source: string][],
 ): TRecord[] => {
   const sql = `
     SELECT
@@ -170,7 +167,7 @@ export const getRecordsByKeysDb = (
 
   return result.map((result) => ({
     type: result.type,
-    sourceName: result.source,
+    source: result.source,
     id: result.record_id,
     title: result.title,
     publicationDate: new Date(result.publication_date),
