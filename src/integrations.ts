@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { fetcher, removeHtml, subtractDays, xmlParser } from "./utils.js";
-import { type Integration, sources, recordTypes } from "./domain.js";
+import { type Integration, recordSources, recordTypes } from "./domain.js";
 
 const REQUEST_TIMEOUT_MS =
   Number(process.env["REQUEST_TIMEOUT_MS"]) || 60 * 1000;
@@ -20,7 +20,7 @@ const wordPressUtils = {
 };
 
 const angryMetalGuy: Integration = {
-  sourceName: sources.angryMetalGuy,
+  source: recordSources.angryMetalGuy,
   async getLastRecords() {
     const progressiveMetalTag = 8161;
     const reviewCategory = 13;
@@ -51,7 +51,7 @@ const angryMetalGuy: Integration = {
         excerpt: { rendered: summary },
       }) => ({
         type: recordTypes.review,
-        sourceName: sources.angryMetalGuy,
+        source: recordSources.angryMetalGuy,
         id: id.toString(),
         title: removeHtml(title),
         link,
@@ -83,7 +83,7 @@ const concertsMetalResponseSchema = z.object({
 });
 
 const concertsMetal: Integration = {
-  sourceName: sources.concertsMetal,
+  source: recordSources.concertsMetal,
   async getLastRecords() {
     const response = await fetcher.get("https://es.concerts-metal.com", {
       path: "/rss/ES_Barcelona.xml",
@@ -96,7 +96,7 @@ const concertsMetal: Integration = {
 
     return validated.rss.channel[0].item.map((item) => ({
       type: recordTypes.concert,
-      sourceName: sources.concertsMetal,
+      source: recordSources.concertsMetal,
       id: item.guid[0],
       title: removeHtml(item.title[0]),
       link: item.link[0],

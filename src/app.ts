@@ -12,7 +12,7 @@ const recordToEmailProps = (record: TRecord): EmailProps => {
     month: "long",
     day: "numeric",
   });
-  const message = `A new ${record.type} has been published on ${record.sourceName}\n\nTitle: ${record.title}\nPublish date: ${date}\nDescription: ${record.description}\nLink: ${record.link}`;
+  const message = `A new ${record.type} has been published on ${record.source}\n\nTitle: ${record.title}\nPublish date: ${date}\nDescription: ${record.description}\nLink: ${record.link}`;
 
   return {
     subject,
@@ -26,7 +26,7 @@ const sendAndSaveNewRecordsFromIntegration = async (
   const lastRecords = await integration.getLastRecords();
 
   if (!lastRecords.length) {
-    logger.info(`No records were found from '${integration.sourceName}'.`);
+    logger.info(`No records were found from '${integration.source}'.`);
     return;
   }
 
@@ -34,7 +34,7 @@ const sendAndSaveNewRecordsFromIntegration = async (
     lastRecords.map(async (record) => {
       // Check for the existence of the record in the database
       // since lastRecords contains pre-fetched data.
-      const isRecordSaved = recordExistsByKeyDb(record.id, record.sourceName);
+      const isRecordSaved = recordExistsByKeyDb(record.id, record.source);
       if (isRecordSaved) {
         return;
       }

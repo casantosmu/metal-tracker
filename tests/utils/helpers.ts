@@ -1,5 +1,5 @@
 import { faker } from "@faker-js/faker";
-import type { RecordType, SourceName, TRecord } from "../../src/domain.js";
+import type { TRecord } from "../../src/domain.js";
 import { toXml } from "../../src/utils.js";
 
 type ListCount =
@@ -10,8 +10,8 @@ type ListCount =
     };
 
 interface FakeWordPressPostV2Props {
-  type: RecordType;
-  sourceName: SourceName;
+  type: string;
+  source: string;
 }
 
 export class FakeWordPressPostV2 {
@@ -37,7 +37,7 @@ export class FakeWordPressPostV2 {
   toRecord(): TRecord {
     return {
       type: this.props.type,
-      sourceName: this.props.sourceName,
+      source: this.props.source,
       id: this.id.toString(),
       title: this.title,
       link: this.link,
@@ -56,7 +56,7 @@ export class FakeWordPressPostsV2 {
     count: ListCount = { min: 1, max: 25 },
   ) {
     this.posts = faker.helpers.multiple(() => new FakeWordPressPostV2(props), {
-      count: count,
+      count,
     });
     this.length = this.posts.length;
   }
@@ -92,7 +92,7 @@ class FakeConcertsMetalItem {
   toRecord(): TRecord {
     return {
       type: "concert",
-      sourceName: "Concerts-Metal.com",
+      source: "Concerts-Metal.com",
       id: this.guid,
       title: this.title,
       link: this.link,
@@ -108,7 +108,7 @@ export class FakeConcertsMetalList {
 
   constructor(count: ListCount = { min: 1, max: 25 }) {
     this.items = faker.helpers.multiple(() => new FakeConcertsMetalItem(), {
-      count: count,
+      count,
     });
     this.length = this.items.length;
   }

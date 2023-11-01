@@ -1,23 +1,17 @@
-import type { ObjectValues } from "./types.js";
-
 export const recordTypes = {
   review: "review",
   concert: "concert",
 } as const;
 
-export type RecordType = ObjectValues<typeof recordTypes>;
-
-export const sources = {
+export const recordSources = {
   angryMetalGuy: "Angry Metal Guy",
   concertsMetal: "Concerts-Metal.com",
 } as const;
 
-export type SourceName = ObjectValues<typeof sources>;
-
 export interface TRecord {
   id: string;
-  type: RecordType;
-  sourceName: SourceName;
+  type: string;
+  source: string;
   title: string;
   link: string;
   publicationDate: Date;
@@ -25,6 +19,6 @@ export interface TRecord {
 }
 
 export interface Integration {
-  sourceName: SourceName;
+  source: (typeof recordSources)[keyof typeof recordSources];
   getLastRecords: () => Promise<TRecord[]>;
 }
