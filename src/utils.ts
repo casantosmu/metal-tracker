@@ -24,6 +24,28 @@ const buildUrl = (url: string, options?: UrlOptions): string => {
   return result.toString();
 };
 
+const fetchWithTimeout = async (
+  url: string,
+  timeoutMs: number,
+): Promise<Response> => {
+  const abortSignal = AbortSignal.timeout(timeoutMs);
+
+  let response: Response;
+  try {
+    response = await fetch(url, { signal: abortSignal });
+  } catch (error) {
+    const customError = new Error(`Request to GET '${url}' failed`);
+
+    customError.cause = abortSignal.aborted
+      ? `Timed out (${timeoutMs} ms)`
+      : error;
+
+    throw customError;
+  }
+
+  return response;
+};
+
 type FetcherOptions = UrlOptions & { timeoutMs?: number };
 
 async function getFn(
@@ -44,24 +66,9 @@ async function getFn(
 ): Promise<string | Record<string, unknown>> {
   const endpoint = buildUrl(url, options);
 
-  const abortSignal = options?.timeoutMs
-    ? AbortSignal.timeout(options.timeoutMs)
-    : // eslint-disable-next-line unicorn/no-null
-      null;
-
-  let response: Response;
-  try {
-    response = await fetch(endpoint, { signal: abortSignal });
-  } catch (error) {
-    const customError = new Error(`Request to GET '${endpoint}' failed`);
-
-    customError.cause =
-      options?.timeoutMs && abortSignal?.aborted
-        ? `Timed out (${options.timeoutMs} ms)`
-        : error;
-
-    throw customError;
-  }
+  const response = options?.timeoutMs
+    ? await fetchWithTimeout(endpoint, options.timeoutMs)
+    : await fetch(endpoint);
 
   const text = await response.text();
 
