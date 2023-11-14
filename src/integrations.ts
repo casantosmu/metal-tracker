@@ -2,35 +2,40 @@ import { z } from "zod";
 import { fetcher, removeHtml, subtractDays, xmlParser } from "./utils.js";
 import { type Integration, recordSources, recordTypes } from "./domain.js";
 
-const REQUEST_TIMEOUT_MS =
-  Number(process.env["REQUEST_TIMEOUT_MS"]) || 60 * 1000;
+const requestTimeoutMsEnvValidation = z.coerce
+  .number()
+  .default(60 * 1000)
+  .safeParse(process.env["REQUEST_TIMEOUT_MS"]);
 
-const wordPressUtils = {
-  maxPerPage: 100,
-  jsonV2PostsPath: "/wp-json/wp/v2/posts",
-  jsonV2PostsResponseSchema: z.array(
-    z.object({
-      id: z.number(),
-      date: z.coerce.date(),
-      link: z.string(),
-      title: z.object({ rendered: z.string() }),
-      excerpt: z.object({ rendered: z.string() }),
-    }),
-  ),
-};
+if (!requestTimeoutMsEnvValidation.success) {
+  throw new Error(
+    "REQUEST_TIMEOUT_MS env variable must be number or not defined",
+  );
+}
+
+const REQUEST_TIMEOUT_MS = requestTimeoutMsEnvValidation.data;
+
+const angryMetalGuyResponseSchema = z.array(
+  z.object({
+    id: z.number(),
+    date: z.coerce.date(),
+    link: z.string(),
+    title: z.object({ rendered: z.string() }),
+    excerpt: z.object({ rendered: z.string() }),
+  }),
+);
 
 const angryMetalGuy: Integration = {
-  source: recordSources.angryMetalGuy,
   async getLastRecords() {
     const progressiveMetalTag = 8161;
     const reviewCategory = 13;
     const fetchPostsAfter = subtractDays(new Date(Date.now()), 31);
 
     const response = await fetcher.get("https://angrymetalguy.com", {
-      path: wordPressUtils.jsonV2PostsPath,
+      path: "/wp-json/wp/v2/posts",
       params: {
         page: 1,
-        per_page: wordPressUtils.maxPerPage,
+        per_page: 100,
         order: "desc",
         orderby: "date",
         after: fetchPostsAfter.toISOString(),
@@ -40,7 +45,7 @@ const angryMetalGuy: Integration = {
       timeoutMs: REQUEST_TIMEOUT_MS,
     });
 
-    const validated = wordPressUtils.jsonV2PostsResponseSchema.parse(response);
+    const validated = angryMetalGuyResponseSchema.parse(response);
 
     return validated.map(
       ({
@@ -83,7 +88,6 @@ const concertsMetalResponseSchema = z.object({
 });
 
 const concertsMetal: Integration = {
-  source: recordSources.concertsMetal,
   async getLastRecords() {
     const response = await fetcher.get("https://es.concerts-metal.com", {
       path: "/rss/ES_Barcelona.xml",

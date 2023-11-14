@@ -12,16 +12,16 @@ interface UrlOptions {
   params?: Record<string, string | number>;
 }
 
-const buildUrl = (url: string, options?: UrlOptions): string => {
-  const result = options?.path ? new URL(options.path, url) : new URL(url);
+const buildUrl = (baseUrl: string, options?: UrlOptions): string => {
+  const url = options?.path ? new URL(options.path, baseUrl) : new URL(baseUrl);
 
   if (options?.params) {
     for (const [key, value] of Object.entries(options.params)) {
-      result.searchParams.append(key, value.toString());
+      url.searchParams.append(key, value.toString());
     }
   }
 
-  return result.toString();
+  return url.toString();
 };
 
 const fetchWithTimeout = async (
@@ -59,11 +59,11 @@ async function getFn(
   options?: FetcherOptions & {
     responseType?: "json";
   },
-): Promise<Record<string, unknown>>;
+): Promise<unknown>;
 async function getFn(
   url: string,
   options?: FetcherOptions & { responseType?: "text" | "json" },
-): Promise<string | Record<string, unknown>> {
+): Promise<unknown> {
   const endpoint = buildUrl(url, options);
 
   const response = options?.timeoutMs
@@ -80,10 +80,8 @@ async function getFn(
 
   logger.debug(`GET ${response.status} '${endpoint}'`);
 
-  const result =
-    options?.responseType === "text"
-      ? text
-      : (JSON.parse(text) as Record<string, unknown>);
+  const result: unknown =
+    options?.responseType === "text" ? text : JSON.parse(text);
 
   return result;
 }
