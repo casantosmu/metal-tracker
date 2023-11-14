@@ -19,6 +19,5 @@ export interface TRecord {
 }
 
 export interface Integration {
-  source: (typeof recordSources)[keyof typeof recordSources];
   getLastRecords: () => Promise<TRecord[]>;
 }

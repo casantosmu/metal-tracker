@@ -30,11 +30,6 @@ const sendAndSaveNewRecordsFromIntegration = async (
 ): Promise<void> => {
   const lastRecords = await integration.getLastRecords();
 
-  if (lastRecords.length === 0) {
-    logger.info(`No records were found from '${integration.source}'.`);
-    return;
-  }
-
   const results = await Promise.allSettled(
     lastRecords.map(async (record) => {
       // Check for the existence of the record in the database
