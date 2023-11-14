@@ -2,8 +2,18 @@ import { z } from "zod";
 import { fetcher, removeHtml, subtractDays, xmlParser } from "./utils.js";
 import { type Integration, recordSources, recordTypes } from "./domain.js";
 
-const REQUEST_TIMEOUT_MS =
-  Number(process.env["REQUEST_TIMEOUT_MS"]) || 60 * 1000;
+const requestTimeoutMsEnvValidation = z.coerce
+  .number()
+  .default(60 * 1000)
+  .safeParse(process.env["REQUEST_TIMEOUT_MS"]);
+
+if (!requestTimeoutMsEnvValidation.success) {
+  throw new Error(
+    "REQUEST_TIMEOUT_MS env variable must be number or not defined",
+  );
+}
+
+const REQUEST_TIMEOUT_MS = requestTimeoutMsEnvValidation.data;
 
 const wordPressUtils = {
   maxPerPage: 100,

@@ -48,7 +48,8 @@
           "db": false,
           "dir": false,
           "props": false,
-          "fn": false
+          "fn": false,
+          "env": false
         }
       }
     ]
