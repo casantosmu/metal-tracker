@@ -4,6 +4,7 @@ import { type Integration, recordSources, recordTypes } from "./domain.js";
 
 const requestTimeoutMsEnvValidation = z.coerce
   .number()
+  .nonnegative()
   .default(60 * 1000)
   .safeParse(process.env["REQUEST_TIMEOUT_MS"]);
 

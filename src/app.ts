@@ -18,11 +18,7 @@ const recordToEmailProps = (record: TRecord): EmailProps => {
     day: "numeric",
   });
   const message = `A new ${record.type} has been published on ${record.source}\n\nTitle: ${record.title}\nPublish date: ${date}\nDescription: ${record.description}\nLink: ${record.link}`;
-
-  return {
-    subject,
-    message,
-  };
+  return { subject, message };
 };
 
 const sendAndSaveNewRecordsFromIntegration = async (
