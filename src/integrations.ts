@@ -10,7 +10,7 @@ const requestTimeoutMsEnvValidation = z.coerce
 
 if (!requestTimeoutMsEnvValidation.success) {
   throw new Error(
-    "REQUEST_TIMEOUT_MS env variable must be number or not defined",
+    "REQUEST_TIMEOUT_MS env variable must be non negative number or not defined",
   );
 }
 
