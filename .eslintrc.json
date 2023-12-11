@@ -54,5 +54,5 @@
       }
     ]
   },
-  "ignorePatterns": ["dist", "coverage"]
+  "ignorePatterns": ["dist", "coverage", "vitest.config.ts"]
 }
