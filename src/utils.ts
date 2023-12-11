@@ -14,13 +14,11 @@ interface UrlOptions {
 
 const buildUrl = (baseUrl: string, options?: UrlOptions): string => {
   const url = options?.path ? new URL(options.path, baseUrl) : new URL(baseUrl);
-
   if (options?.params) {
     for (const [key, value] of Object.entries(options.params)) {
       url.searchParams.append(key, value.toString());
     }
   }
-
   return url.toString();
 };
 
@@ -29,21 +27,14 @@ const fetchWithTimeout = async (
   timeoutMs: number,
 ): Promise<Response> => {
   const abortSignal = AbortSignal.timeout(timeoutMs);
-
-  let response: Response;
   try {
-    response = await fetch(url, { signal: abortSignal });
+    return await fetch(url, { signal: abortSignal });
   } catch (error) {
-    const customError = new Error(`Request to GET '${url}' failed`);
-
-    customError.cause = abortSignal.aborted
-      ? `Timed out (${timeoutMs} ms)`
-      : error;
-
-    throw customError;
+    if (abortSignal.aborted) {
+      throw new Error(`Request to GET '${url}' timed out (${timeoutMs} ms)`);
+    }
+    throw error;
   }
-
-  return response;
 };
 
 type FetcherOptions = UrlOptions & { timeoutMs?: number };

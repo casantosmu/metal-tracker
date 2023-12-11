@@ -6,7 +6,6 @@ export default defineConfig({
     globalSetup: "tests/utils/global-setup.ts",
     setupFiles: "dotenv/config",
     coverage: {
-      all: true,
       include: ["src"],
       exclude: ["src/index.ts"],
     },
