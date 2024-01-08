@@ -1,20 +1,33 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import {
+  describe,
+  it,
+  expect,
+  vi,
+  beforeEach,
+  afterEach,
+  beforeAll,
+} from "vitest";
 import nock, {
   disableNetConnect as nockDisableNetConnect,
   cleanAll as nockCleanAll,
 } from "nock";
 import { PublishCommand, SNSClient } from "@aws-sdk/client-sns";
 import { mockClient } from "aws-sdk-client-mock";
-import { getRecordsByKeysDb, insertRecordsDb } from "../src/db.js";
+import {
+  loadMigrations,
+  getRecordsByKeysDb,
+  insertRecordsDb,
+} from "../src/db.js";
 import {
   FakeConcertsMetalList,
   FakeWordPressPostsV2,
   recordsSortedBy,
 } from "./utils/helpers.js";
 
-const snsMock = mockClient(SNSClient);
-
-nockDisableNetConnect();
+beforeAll(() => {
+  loadMigrations();
+  nockDisableNetConnect();
+});
 
 beforeEach(() => {
   snsMock.reset();
@@ -27,6 +40,8 @@ beforeEach(() => {
 afterEach(() => {
   vi.useRealTimers();
 });
+
+const snsMock = mockClient(SNSClient);
 
 const loadApp = async (): Promise<void> => {
   const app = await import("../src/app.js");
