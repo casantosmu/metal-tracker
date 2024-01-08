@@ -1,5 +1,6 @@
 import path from "node:path";
 import fs from "node:fs";
+import { fileURLToPath } from "node:url";
 import BetterSqlite3 from "better-sqlite3";
 import { z } from "zod";
 import type { TRecord } from "./domain.js";
@@ -45,7 +46,7 @@ const parseMigrations = (migrationsDir: string): Migration[] => {
 };
 
 export const loadMigrations = (): void => {
-  const migrationsDir = new URL("migrations", import.meta.url).pathname;
+  const migrationsDir = fileURLToPath(new URL("migrations", import.meta.url));
   logger.info(`Checking for new migrations in directory: ${migrationsDir}`);
   const migrations = parseMigrations(migrationsDir);
 
