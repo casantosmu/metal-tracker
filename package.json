@@ -16,7 +16,7 @@
   },
   "dependencies": {
     "@aws-sdk/client-sns": "^3.504.0",
-    "better-sqlite3": "^9.3.0",
+    "better-sqlite3": "^9.4.0",
     "node-fetch": "^3.3.2",
     "pino": "^8.17.2",
     "string-strip-html": "^13.4.6",
